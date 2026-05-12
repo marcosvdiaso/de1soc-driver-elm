@@ -39,7 +39,7 @@
 
 set_global_assignment -name FAMILY "Cyclone V"
 set_global_assignment -name DEVICE 5CSEMA5F31C6
-set_global_assignment -name TOP_LEVEL_ENTITY CoProcessor
+set_global_assignment -name TOP_LEVEL_ENTITY wrapper
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 25.1STD.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "14:57:28  ABRIL 01, 2026"
 set_global_assignment -name LAST_QUARTUS_VERSION "25.1std.0 Lite Edition"
@@ -61,6 +61,7 @@ set_global_assignment -name VERILOG_FILE inference_unit/argmax_iterativo.v
 set_global_assignment -name VERILOG_FILE inference_unit/first_layer.v
 set_global_assignment -name VERILOG_FILE inference_unit/neural_unit.v
 set_global_assignment -name VERILOG_FILE inference_unit/second_layer.v
+set_global_assignment -name VERILOG_FILE ../utils/wrapper.v
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
