@@ -1,0 +1,59 @@
+Info: Starting: Create block symbol file (.bsf)
+Info: qsys-generate /home/marcosvdiaso/repos/de1soc-driver-elm/src/mogger.qsys --block-symbol-file --output-directory=/home/marcosvdiaso/repos/de1soc-driver-elm/src/mogger --family="Cyclone V" --part=5CSEMA5F31C6
+Progress: Loading src/mogger.qsys
+Progress: Reading input file
+Progress: Adding clk_0 [clock_source 25.1]
+Progress: Parameterizing module clk_0
+Progress: Adding hps_0 [altera_hps 25.1]
+Progress: Parameterizing module hps_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: mogger.hps_0: HPS Main PLL counter settings: n = 0  m = 73
+Info: mogger.hps_0: HPS peripherial PLL counter settings: n = 0  m = 39
+Warning: mogger.hps_0: "Configuration/HPS-to-FPGA user 0 clock frequency" (desired_cfg_clk_mhz) requested 100.0 MHz, but only achieved 97.368421 MHz
+Warning: mogger.hps_0: 1 or more output clock frequencies cannot be achieved precisely, consider revising desired output clock frequencies.
+Warning: mogger.hps_0: HPS model no longer supports simulation for HPS FPGA Bridges.
+Warning: mogger.hps_0: ODT is disabled. Enabling ODT (Mode Register 1) may improve signal integrity
+Warning: mogger.hps_0: set_interface_assignment: Interface "hps_io" does not exist
+Warning: mogger.hps_0: hps_0.h2f_mpu_events must be exported, or connected to a matching conduit.
+Info: qsys-generate succeeded.
+Info: Finished: Create block symbol file (.bsf)
+Info: 
+Info: Starting: Create HDL design files for synthesis
+Info: qsys-generate /home/marcosvdiaso/repos/de1soc-driver-elm/src/mogger.qsys --synthesis=VERILOG --output-directory=/home/marcosvdiaso/repos/de1soc-driver-elm/src/mogger/synthesis --family="Cyclone V" --part=5CSEMA5F31C6
+Progress: Loading src/mogger.qsys
+Progress: Reading input file
+Progress: Adding clk_0 [clock_source 25.1]
+Progress: Parameterizing module clk_0
+Progress: Adding hps_0 [altera_hps 25.1]
+Progress: Parameterizing module hps_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: mogger.hps_0: HPS Main PLL counter settings: n = 0  m = 73
+Info: mogger.hps_0: HPS peripherial PLL counter settings: n = 0  m = 39
+Warning: mogger.hps_0: "Configuration/HPS-to-FPGA user 0 clock frequency" (desired_cfg_clk_mhz) requested 100.0 MHz, but only achieved 97.368421 MHz
+Warning: mogger.hps_0: 1 or more output clock frequencies cannot be achieved precisely, consider revising desired output clock frequencies.
+Warning: mogger.hps_0: HPS model no longer supports simulation for HPS FPGA Bridges.
+Warning: mogger.hps_0: ODT is disabled. Enabling ODT (Mode Register 1) may improve signal integrity
+Warning: mogger.hps_0: set_interface_assignment: Interface "hps_io" does not exist
+Warning: mogger.hps_0: hps_0.h2f_mpu_events must be exported, or connected to a matching conduit.
+Info: mogger: Generating "mogger" for QUARTUS_SYNTH
+Info: hps_0: "Running  for module: hps_0"
+Info: hps_0: HPS Main PLL counter settings: n = 0  m = 73
+Info: hps_0: HPS peripherial PLL counter settings: n = 0  m = 39
+Warning: hps_0: "Configuration/HPS-to-FPGA user 0 clock frequency" (desired_cfg_clk_mhz) requested 100.0 MHz, but only achieved 97.368421 MHz
+Warning: hps_0: 1 or more output clock frequencies cannot be achieved precisely, consider revising desired output clock frequencies.
+Warning: hps_0: HPS model no longer supports simulation for HPS FPGA Bridges.
+Warning: hps_0: ODT is disabled. Enabling ODT (Mode Register 1) may improve signal integrity
+Warning: hps_0: set_interface_assignment: Interface "hps_io" does not exist
+Info: hps_0: "mogger" instantiated altera_hps "hps_0"
+Info: fpga_interfaces: "hps_0" instantiated altera_interface_generator "fpga_interfaces"
+Info: hps_io: "hps_0" instantiated altera_hps_io "hps_io"
+Info: border: "hps_io" instantiated altera_interface_generator "border"
+Info: mogger: Done "mogger" with 5 modules, 48 files
+Info: qsys-generate succeeded.
+Info: Finished: Create HDL design files for synthesis

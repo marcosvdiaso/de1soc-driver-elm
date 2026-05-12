@@ -1,7 +1,6 @@
 
 module mogger (
 	clk_clk,
-	reset_reset_n,
 	memory_mem_a,
 	memory_mem_ba,
 	memory_mem_ck,
@@ -17,10 +16,15 @@ module mogger (
 	memory_mem_dqs_n,
 	memory_mem_odt,
 	memory_mem_dm,
-	memory_oct_rzqin);	
+	memory_oct_rzqin,
+	reset_reset_n,
+	conduit_clr,
+	conduit_rst,
+	conduit_enb,
+	conduit_readdata,
+	conduit_writebyteenable_n);	
 
 	input		clk_clk;
-	input		reset_reset_n;
 	output	[12:0]	memory_mem_a;
 	output	[2:0]	memory_mem_ba;
 	output		memory_mem_ck;
@@ -37,4 +41,10 @@ module mogger (
 	output		memory_mem_odt;
 	output		memory_mem_dm;
 	input		memory_oct_rzqin;
+	input		reset_reset_n;
+	output		conduit_clr;
+	output		conduit_rst;
+	output		conduit_enb;
+	output	[31:0]	conduit_readdata;
+	input	[31:0]	conduit_writebyteenable_n;
 endmodule
