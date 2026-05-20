@@ -374,7 +374,12 @@ CoProcessor u_elm(
     .data_out      (elm_data_out)
 );
 
+reg [31:0] r;
 
+always@(elm_data_in)
+begin
+    r=elm_data_in;
+end
 
 endmodule
 
