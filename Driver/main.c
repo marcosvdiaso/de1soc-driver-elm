@@ -10,13 +10,14 @@ int menu(){
     printf("3. Carregar weights\n");
     printf("4. Carregar beta\n");
     printf("5. Iniciar inferência\n");
+    printf("6. Abrir MMAP\n");
     printf("0. Sair\n");
 
     do {
         printf("Digite sua opção: ");
         scanf("%d", &op);
         getchar();
-    } while(op <= -1 || op >= 6);
+    } while(op <= -1 || op >= 7);
 
     return op;
 }
@@ -34,47 +35,44 @@ int main() {
 
     int digit;
     int op;
+    int open = 0;
 
     do {
         op = menu();
 
-        if (op == 1){
+        if (op == 1 && open){
             read_path("Caminho da imagem: ", path_img, sizeof(path_img));
             if (load_file(path_img, img, 1, 784) < 0) {
                 printf("Erro carregando imagem\n");
             } else {
                 printf("Imagem carregada\n");
             }
-        } else if (op == 2){
+        } else if (op == 2 && open){
             read_path("CAminho do bias: ", path_bias, sizeof(path_bias));
             if (load_file(path_bias, bias, sizeof(unsigned short), 128) < 0) {
                 printf("Erro carregando bias\n");
             } else {
                 printf("bias carregada\n");
             }
-        } else if (op == 3) {
+        } else if (op == 3 && open) {
             read_path("Caminho dos weights: ", path_weights, sizeof(path_weights));
             if (load_file(path_weights, weights, sizeof(unsigned short), 100352) < 0) {
                 printf("Erro carregando weights\n");
             }else {
                 printf("wheigts carregada\n");
             }
-        } else if (op == 4){
+        } else if (op == 4 && open){
             read_path("Caminho do beta: ", path_beta, sizeof(path_beta));
             if (load_file(path_beta, beta, sizeof(unsigned short), 1280) < 0) {
                 printf("Erro carregando beta\n");
             } else {
                 printf("beta carregada\n");
             }
-        } else if (op == 5){
+        } else if (op == 5 && open){
             printf("Digite o digito esperado: ");
             scanf("%d", &digit);
             getchar();
         
-            if (elm_open() < 0) {
-                    printf("Erro no open\n");
-                    return 1;
-                }
             elm_reset();
 
             if (elm_store_img(img) < 0) {
@@ -102,8 +100,18 @@ int main() {
             }
 
             benchmark(digit);
-            elm_close();
+        } else if (op == 6){
+            if (elm_open() < 0) {
+                printf("Erro no open\n");
+            } else {
+                printf("Open ok!");
+                open = 1;
+            }
         }
     } while (op!=0);
+
+    if (open){
+        elm_close();
+    }
     return 0;
 }
