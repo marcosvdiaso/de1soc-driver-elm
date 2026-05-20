@@ -36,39 +36,58 @@ int main() {
     int digit;
     int op;
     int open = 0;
+    int img_ok = 0;
+    int w_ok = 0;
+    int b_ok = 0;
+    int beta_ok = 0;
 
     do {
         op = menu();
 
-        if (op == 1 && open){
+        if (op == 1){
             read_path("Caminho da imagem: ", path_img, sizeof(path_img));
             if (load_file(path_img, img, 1, 784) < 0) {
                 printf("Erro carregando imagem\n");
+                img_ok = 0;
             } else {
                 printf("Imagem carregada\n");
+                img_ok = 1;
             }
-        } else if (op == 2 && open){
+        } else if (op == 2){
             read_path("CAminho do bias: ", path_bias, sizeof(path_bias));
             if (load_file(path_bias, bias, sizeof(unsigned short), 128) < 0) {
                 printf("Erro carregando bias\n");
+                b_ok = 0;
             } else {
                 printf("bias carregada\n");
+                b_ok = 1;
             }
-        } else if (op == 3 && open) {
+        } else if (op == 3) {
             read_path("Caminho dos weights: ", path_weights, sizeof(path_weights));
             if (load_file(path_weights, weights, sizeof(unsigned short), 100352) < 0) {
                 printf("Erro carregando weights\n");
+                w_ok = 0;
             }else {
                 printf("wheigts carregada\n");
+                w_ok = 1;
             }
-        } else if (op == 4 && open){
+        } else if (op == 4){
             read_path("Caminho do beta: ", path_beta, sizeof(path_beta));
             if (load_file(path_beta, beta, sizeof(unsigned short), 1280) < 0) {
                 printf("Erro carregando beta\n");
+                beta_ok = 0;
             } else {
                 printf("beta carregada\n");
+                beta_ok =1;
             }
-        } else if (op == 5 && open){
+        } else if (op == 5){
+            if (!b_ok || !w_ok || !img_ok || !beta_ok){
+                printf("Verifique se todos os arquivos estão carregados.\n");
+                continue;
+            } else if (!open){
+                printf("mmap não aberto\n");
+                continue;
+            }
             printf("Digite o digito esperado: ");
             scanf("%d", &digit);
             getchar();
@@ -77,35 +96,35 @@ int main() {
 
             if (elm_store_img(img) < 0) {
                 printf("Erro enviando imagem\n");
-                elm_close();
-                return 1;
+                continue;
             }
 
             if (elm_store_bias(bias) < 0) {
                 printf("Erro enviando bias\n");
-                elm_close();
-                return 1;
+                continue;
             }
 
             if (elm_store_beta(beta) < 0) {
                 printf("Erro enviando beta\n");
-                elm_close();
-                return 1;
+                continue;
             }
 
             if (elm_store_weights(weights) < 0) {
                 printf("Erro enviando weights\n");
-                elm_close();
-                return 1;
+                continue;
             }
 
             benchmark(digit);
         } else if (op == 6){
-            if (elm_open() < 0) {
-                printf("Erro no open\n");
+            if (!open){
+                if (elm_open() < 0) {
+                    printf("Erro no open\n");
+                } else {
+                    printf("Open ok!\n");
+                    open = 1;
+                }
             } else {
-                printf("Open ok!");
-                open = 1;
+            printf("mmap já aberto.\n");
             }
         }
     } while (op!=0);
