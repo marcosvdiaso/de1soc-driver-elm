@@ -53,19 +53,19 @@ newline: .ascii "\n"
 
 .section .rodata
 .if TEST >= 2
-image: .incbin "image.bin"
+image: .incbin "archives/images/image.bin"
 .endif
 
 .if TEST >= 3
-bbin:     .incbin "b.bin"
+bbin:     .incbin "archives/b.bin"
 .endif
 
 .if TEST >= 4
-beta:  .incbin "beta.bin"
+beta:  .incbin "archives/beta.bin"
 .endif
 
 .if TEST >= 5
-W_in:  .incbin "W_in.bin"
+W_in:  .incbin "archives/W_in.bin"
 .endif
 
 .section .text
