@@ -44,6 +44,9 @@ msg_start_ok_len = . - msg_start_ok
 msg_start_err: .ascii "Start com erro\n"
 msg_start_err_len = . - msg_start_err
 
+msg_loop: .ascii "Loop ok\n"
+msg_loop_len = . - msg_loop
+
 msg_resultado: .ascii "Resultado: "
 msg_resultado_len = . - msg_resultado
 newline: .ascii "\n"
@@ -69,6 +72,10 @@ W_in:  .incbin "W_in.bin"
 .global main
 
 main:
+		.if TEST >= 7
+		mov r8, #0
+		.endif 
+
     push {r4, lr}
 
     bl   elm_open
@@ -94,114 +101,115 @@ main:
 .endif
 
 .if TEST >= 2
-    ldr  r0, =image
-    bl   elm_store_img
-    cmp  r0, #0
-    blt  .err_img
+		ldr  r0, =image
+		bl   elm_store_img
+		cmp  r0, #0
+		blt  .err_img
 
-    mov  r0, #1
-    ldr  r1, =msg_img_ok
-    mov  r2, #msg_img_ok_len
-    mov  r7, #4
-    svc  #0
+		mov  r0, #1
+		ldr  r1, =msg_img_ok
+		mov  r2, #msg_img_ok_len
+		mov  r7, #4
+		svc  #0
 .endif
 
 .if TEST == 2
-    b .main_done
+		b .main_done
 .endif
 
 .if TEST >= 3
-    ldr  r0, =bbin
-    bl   elm_store_bias
-    cmp  r0, #0
-    blt  .err_bias
+		ldr  r0, =bbin
+		bl   elm_store_bias
+		cmp  r0, #0
+		blt  .err_bias
 
-    mov  r0, #1
-    ldr  r1, =msg_bias_ok
-    mov  r2, #msg_bias_ok_len
-    mov  r7, #4
-    svc  #0
+		mov  r0, #1
+		ldr  r1, =msg_bias_ok
+		mov  r2, #msg_bias_ok_len
+		mov  r7, #4
+		svc  #0
 .endif
 
 .if TEST == 3
-    b .main_done
+		b .main_done
 .endif
 
 .if TEST >= 4
-    ldr  r0, =beta
-    bl   elm_store_beta
-    cmp  r0, #0
-    blt  .err_beta
+		ldr  r0, =beta
+		bl   elm_store_beta
+		cmp  r0, #0
+		blt  .err_beta
 
-    mov  r0, #1
-    ldr  r1, =msg_beta_ok
-    mov  r2, #msg_beta_ok_len
-    mov  r7, #4
-    svc  #0
+		mov  r0, #1
+		ldr  r1, =msg_beta_ok
+		mov  r2, #msg_beta_ok_len
+		mov  r7, #4
+		svc  #0
 .endif
 
 .if TEST == 4
-    b .main_done
+		b .main_done
 .endif
 
 .if TEST >= 5
-    ldr  r0, =W_in
-    bl   elm_store_weights
-    cmp  r0, #0
-    blt  .err_wei
+		ldr  r0, =W_in
+		bl   elm_store_weights
+		cmp  r0, #0
+		blt  .err_wei
 
-    mov  r0, #1
-    ldr  r1, =msg_wei_ok
-    mov  r2, #msg_wei_ok_len
-    mov  r7, #4
-    svc  #0
+		mov  r0, #1
+		ldr  r1, =msg_wei_ok
+		mov  r2, #msg_wei_ok_len
+		mov  r7, #4
+		svc  #0
 .endif
 
 .if TEST == 5
-    b .main_done
+		b .main_done
 .endif
 
-.if TEST >= 6
-    bl   elm_start
-    cmp  r0, #0
-    blt  .err_start
+.loop_main:
+	.if TEST >= 6
+			bl   elm_start
+			cmp  r0, #0
+			blt  .err_start
 
-    mov  r0, #1
-    ldr  r1, =msg_start_ok
-    mov  r2, #msg_start_ok_len
-    mov  r7, #4
-    svc  #0
+			mov  r0, #1
+			ldr  r1, =msg_start_ok
+			mov  r2, #msg_start_ok_len
+			mov  r7, #4
+			svc  #0
 
-    bl   elm_result
-    cmp  r0, #0
-    blt  .err_start
+			bl   elm_result
+			cmp  r0, #0
+			blt  .err_start
 
-    mov  r4, r0                     
+			mov  r4, r0                     
 
-    mov  r0, #1
-    ldr  r1, =msg_resultado
-    mov  r2, #msg_resultado_len
-    mov  r7, #4
-    svc  #0
+			mov  r0, #1
+			ldr  r1, =msg_resultado
+			mov  r2, #msg_resultado_len
+			mov  r7, #4
+			svc  #0
 
-    add  r4, r4, #'0'
-    sub  sp, sp, #8
-    strb r4, [sp]
-    mov  r0, #1
-    mov  r1, sp
-    mov  r2, #1
-    mov  r7, #4
-    svc  #0
-    add  sp, sp, #8
+			add  r4, r4, #'0'
+			sub  sp, sp, #8
+			strb r4, [sp]
+			mov  r0, #1
+			mov  r1, sp
+			mov  r2, #1
+			mov  r7, #4
+			svc  #0
+			add  sp, sp, #8
 
-    mov  r0, #1
-    ldr  r1, =newline
-    mov  r2, #1
-    mov  r7, #4
-    svc  #0
-.endif
+			mov  r0, #1
+			ldr  r1, =newline
+			mov  r2, #1
+			mov  r7, #4
+			svc  #0
+	.endif
 
-    b .main_done
+			b .main_done
 
 .err_open:
     mov  r0, #1
@@ -251,7 +259,18 @@ main:
     svc  #0
 
 .main_done:
-    bl   elm_close
+		.if TEST >= 7
+		add r8, r8, #1
+		cmp r8, #10
+		blt .loop_main
+		mov  r0, #1
+		ldr  r1, =msg_loop
+		mov  r2, #msg_loop_len
+		mov  r7, #4
+		svc  #0
+		.endif 
+
+    bl elm_close
 
     mov  r7, #1
     mov  r0, #0
