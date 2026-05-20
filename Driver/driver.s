@@ -117,10 +117,23 @@ elm_open:
 
 
 /*
-TODO
+elm_close:
+	* rpimeiro fecha o mmap e depois fecha o file descriptor
  */
 elm_close:
-    bx lr
+    push {r7, lr}
+
+    mov  r0, r9
+    mov  r1, #SPAN
+    mov  r7, #215
+    svc  #0
+
+    ldr  r0, =fd_val
+    ldr  r0, [r0]
+    mov  r7, #6
+    svc  #0
+
+    pop  {r7, pc}
 
 /*
 elm_reset:
