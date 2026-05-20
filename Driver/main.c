@@ -127,7 +127,7 @@ int main() {
             printf("mmap já aberto.\n");
             }
         }
-    } while (op!=0);
+    } while (op>0);
 
     if (open){
         elm_close();
