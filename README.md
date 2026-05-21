@@ -410,6 +410,8 @@ Extrai o dígito predito.
 
 ## Benchmark Progressivo
 
+TODO: Testes com load alem dos de inferência
+
 Foram feitos testes sequenciais para 100, 10000, 100000 e 1000000 de testes:
 <details>
 <summary>Screenshots dos benchmarks</summary>
