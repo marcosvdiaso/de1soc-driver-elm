@@ -407,7 +407,7 @@ Extrai o dígito predito.
 
 ## Benchmark Progressivo
 
-Foram feitos testes sequenciais para 100 testes, 10000 testes, 100000 e 1000000 de testes:
+Foram feitos testes sequenciais para 100, 10000, 100000 e 1000000 de testes:
 <details><img width="818" height="584" alt="image" src="https://github.com/user-attachments/assets/d1716592-d6a7-40b6-9404-aa06d1fda760" />
 <img width="817" height="583" alt="image" src="https://github.com/user-attachments/assets/6a93d4bf-16a1-43fe-ad24-62da263bb58e" />
 <img width="818" height="584" alt="image" src="https://github.com/user-attachments/assets/d7f1dd62-ae97-4912-8f63-34859d6a9a6f" />
