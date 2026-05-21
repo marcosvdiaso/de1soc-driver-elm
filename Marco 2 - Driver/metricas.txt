@@ -1,3 +1,0 @@
-latencia
-robustez
-n de ciclos
