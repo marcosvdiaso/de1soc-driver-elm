@@ -5,7 +5,7 @@
 4 - > fluxo de betas
 5 - > fluxo de weights
 6 - > fluxo completo
-7 - > loop 10x
+7 - > fluxo completo com loop
  */
 
 .equ TEST, 7
@@ -50,10 +50,6 @@ msg_loop_len = . - msg_loop
 msg_resultado: .ascii "Resultado: "
 msg_resultado_len = . - msg_resultado
 
-msg_robustez: .ascii "Robustez do driver: "
-msg_robustez_len = . - msg_robustez
-newline: .ascii "\n"
-
 .section .rodata
 .if TEST >= 2
 image: .incbin "archives/images/image.bin"
@@ -71,9 +67,6 @@ beta:  .incbin "archives/beta.bin"
 W_in:  .incbin "archives/W_in.bin"
 .endif
 
-.section .bss
-dig: .skip 4   
-
 .section .text
 .global main
 
@@ -88,8 +81,6 @@ main:
     cmp  r0, #0
     blt  .err_open
 
-	mov r10, #0
-
     mov  r0, #1
     ldr  r1, =msg_open_ok
     mov  r2, #msg_open_ok_len
@@ -103,8 +94,6 @@ main:
     mov  r2, #msg_reset_ok_len
     mov  r7, #4
     svc  #0
-
-	ldr r5, =dig
 
 	mov r7, #3
 	mov r0, #0
@@ -218,12 +207,6 @@ main:
 		svc  #0
 		add  sp, sp, #8
 
-		sub r4, r4, #'0'
-		ldr r5, =dig
-		ldr r5, [r5]
-		cmp  r4, r5
-		bleq .robs 
-
 		mov  r0, #1
 		ldr  r1, =newline
 		mov  r2, #1
@@ -292,25 +275,8 @@ main:
 		svc  #0
 		.endif 
 
-
-	mov  r0, #1
-	ldr  r1, =msg_robustez
-	mov  r2, #msg_robustez_len
-	mov  r7, #4
-	svc  #0
-
     bl elm_close
 
     mov  r7, #1
     mov  r0, #0
     svc  #0
-    
-.robs:
-	mov  r0, #1
-	ldr  r1, =msg_robustez
-	mov  r2, #msg_robustez_len
-	mov  r7, #4
-	svc  #0
-
-	add r10, r10, #1
-	bx lr
