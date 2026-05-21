@@ -64,9 +64,6 @@ O sistema deve:
 - Linux embarcado na DE1-SoC
 - Coprocessador ELM gravado na FPGA
 
-<img width="900" height="1600" alt="image" src="https://github.com/user-attachments/assets/66916bcf-9b86-4318-a544-76f928e431bd" />
-
-
 
 ---
 
@@ -155,6 +152,9 @@ Foram feitas apenas algumas adaptações apra uso do CoProcessador:
 
 - Ele foi fundido junto a um HPS fornecido pelo professor, sendo instanciado no main file da HPS
 - Foram criados 3 PIOs novos no projeto, para data_in, data_out e os signals
+
+<img width="1916" height="1080" alt="image" src="https://github.com/user-attachments/assets/a7eab156-591d-4249-8b18-274a00aa3bb9" />
+
 
 
 ---
