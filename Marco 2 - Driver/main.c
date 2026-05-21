@@ -1,10 +1,15 @@
 #include "driver.h"
 #include <stdio.h>
+#include <time.h>
+
+// https://man7.org/linux/man-pages/man3/clock_gettime.3.html
 
 int main(void) {
     int result, digit, test;
     int ok = 0;
     float rob;
+    struct timespec t1_lat, t2_lat;
+    long lat = 0;
 
     printf("Digito predito esperado: ");
     scanf("%d", &digit);
@@ -20,21 +25,26 @@ int main(void) {
     elm_reset();
 
     for (int i = 0; i < test; i++){
+      clock_gettime(CLOCK_MONOTONIC, &t1_lat);
       if (elm_start() < 0) {
         printf("Erro na inferencia nº %d\n", i+1);
         continue;
       }
+      clock_gettime(CLOCK_MONOTONIC, &t2_lat);
+      lat += (t2_lat.tv_sec - t1_lat.tv_sec) * 1e9 + (t2_lat.tv_nsec - t1_lat.tv_nsec);
       result = elm_result();
       if (result == digit) ok++;
       printf("Digito predito na inferência de nº %d = %d\n", i+1, result);
     }
 
     rob = (ok *100.0f)/ test;
+    lat /= test;
 
     printf("------------------------------------------\n");
     printf("MÉTRICAS DOS TESTES:\n");
     printf("------------------------------------------\n");
     printf("Robustez: %.1f%%\n", rob);
+    printf("Latência: %ld ns\n", lat);
 
     elm_close();
     return 0;
