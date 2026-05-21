@@ -1,4 +1,5 @@
 # DE1-SoC ELM Driver ![Platform](https://img.shields.io/badge/platform-DE1--SoC-blue) ![Language](https://img.shields.io/badge/language-ARM%20Assembly-orange) ![OS](https://img.shields.io/badge/os-Linux-lightgrey)
+
 # Sumário
 
 - [1. Visão Geral](#1-visão-geral)
@@ -35,7 +36,6 @@ Toda a lógica do driver foi implementada em ARM Assembly, incluindo:
 O objetivo do projeto é fornecer uma interface de software para controle do acelerador ELM diretamente do Linux embarcado da DE1-SoC.
 O coprocessador ELM utilizado neste projeto foi fornecido pelo docente da disciplina. Mais detalhes sobre ele podem ser vistos [aqui](https://github.com/DestinyWolf/Problema_SD_2026_1/tree/master).
 
-
 ---
 
 # 2. Levantamento de Requisitos
@@ -66,7 +66,6 @@ O sistema deve:
 - Processador ARM Cortex-A9
 - Linux embarcado na DE1-SoC
 - Coprocessador ELM gravado na FPGA
-
 
 ---
 
@@ -106,6 +105,7 @@ A princípio está servindo apenas para:
 - Exibição de resultados
 
 Porém após finalização do marco 3 é esperado que:
+
 - Possa receber path dos arquivos
 - Enviar arquivos ao driver
 - Salvar um log em csv
@@ -158,42 +158,40 @@ Foram feitas apenas algumas adaptações apra uso do CoProcessador:
 
 <img width="1916" height="1080" alt="image" src="https://github.com/user-attachments/assets/a7eab156-591d-4249-8b18-274a00aa3bb9" />
 
-
-
 ---
 
 # 4. Tecnologias e Softwares Utilizados
 
 ## Sistema Operacional
 
-| Software | Finalidade |
-|---|---|
+| Software     | Finalidade                            |
+| ------------ | ------------------------------------- |
 | Ubuntu 24.04 | Ambiente principal de desenvolvimento |
 
 ---
 
 ## Desenvolvimento
 
-| Ferramenta | Finalidade |
-|---|---|
-| Neovim 0.12.2 | Desenvolvimento local |
+| Ferramenta                 | Finalidade                     |
+| -------------------------- | ------------------------------ |
+| Neovim 0.12.2              | Desenvolvimento local          |
 | Visual Studio Code 1.120.0 | Desenvolvimento em laboratório |
 
 ---
 
 ## Compilação
 
-| Ferramenta | Finalidade |
-|---|---|
+| Ferramenta              | Finalidade                          |
+| ----------------------- | ----------------------------------- |
 | gcc-arm-linux-gnueabihf | Cross-compilação para ARM Cortex-A9 |
-| GNU Assembler (GAS) | Montagem do código ARM Assembly |
+| GNU Assembler (GAS)     | Montagem do código ARM Assembly     |
 
 ---
 
 ## FPGA
 
-| Ferramenta | Finalidade |
-|---|---|
+| Ferramenta         | Finalidade       |
+| ------------------ | ---------------- |
 | Quartus Prime Lite | Gravação da FPGA |
 
 ---
@@ -203,12 +201,10 @@ Foram feitas apenas algumas adaptações apra uso do CoProcessador:
 - ARM Assembly
 - C99
 
-
 ---
 
 # 5. Estrutura do Projeto
 
-    
 ```mermaid
 flowchart TD
 
@@ -231,7 +227,6 @@ flowchart TD
     H --> H1[index.html]
     H --> H2[style.css]
 ```
-
 
 ---
 
@@ -288,13 +283,12 @@ Após a configuração da FPGA é necessário:
 Os pesos do modelo e a imagem de entrada são embutidos no binário em tempo de compilação utilizando `.incbin`.
 É IMPRESCINDÍVEL a existência desses arquivos antes do build:
 
-| Arquivo | Conteúdo | Itens |
-|---|---|---|
-| `archives/W_in.bin` | Matriz de pesos de entrada | 100.352 valores Q4.12 |
-| `archives/b.bin` | Bias da camada oculta | 128 valores Q4.12 |
-| `archives/beta.bin` | Pesos de saída | 1.280 valores Q4.12 |
-| `archives/images/image.bin` | Imagem de entrada | 784 bytes |
-
+| Arquivo                     | Conteúdo                   | Itens                 |
+| --------------------------- | -------------------------- | --------------------- |
+| `archives/W_in.bin`         | Matriz de pesos de entrada | 100.352 valores Q4.12 |
+| `archives/b.bin`            | Bias da camada oculta      | 128 valores Q4.12     |
+| `archives/beta.bin`         | Pesos de saída             | 1.280 valores Q4.12   |
+| `archives/images/image.bin` | Imagem de entrada          | 784 bytes             |
 
 ---
 
@@ -308,14 +302,12 @@ sudo ./driver
 
 <img width="817" height="583" alt="image" src="https://github.com/user-attachments/assets/b214edc4-6657-4f3b-b0f8-5c8561a451ca" />
 
-
 O programa solicita:
 
 - Dígito esperado
 - Quantidade de inferências
 
 Ao final são exibidas métricas de desempenho.
-
 
 ---
 
@@ -370,18 +362,17 @@ Retorno:
 
 Extrai o dígito predito.
 
-
 ---
 
 # 9. Protocolo de Comunicação
 
 ## Registradores
 
-| Registrador | Offset | Função |
-|---|---|---|
-| DATA_IN | `0x00` | Envio de instruções |
-| SIGNALS | `0x10` | Controle de handshake |
-| DATA_OUT | `0x20` | Resultado e status |
+| Registrador | Offset | Função                |
+| ----------- | ------ | --------------------- |
+| DATA_IN     | `0x00` | Envio de instruções   |
+| SIGNALS     | `0x10` | Controle de handshake |
+| DATA_OUT    | `0x20` | Resultado e status    |
 
 ---
 
@@ -390,19 +381,19 @@ Extrai o dígito predito.
 ### SIGNALS
 
 | Bit | Função |
-|---|---|
-| 0 | Enable |
-| 1 | Clear |
-| 2 | Reset |
+| --- | ------ |
+| 0   | Enable |
+| 1   | Clear  |
+| 2   | Reset  |
 
 ### DATA_OUT
 
-| Bit | Significado |
-|---|---|
-| 4 | DONE |
-| 5 | BUSY |
-| 6 | ERROR |
-| [3:0] | Resultado |
+| Bit   | Significado |
+| ----- | ----------- |
+| 4     | DONE        |
+| 5     | BUSY        |
+| 6     | ERROR       |
+| [3:0] | Resultado   |
 
 ---
 
@@ -413,6 +404,7 @@ Extrai o dígito predito.
 TODO: Testes com load alem dos de inferência
 
 Foram feitos testes sequenciais para 100, 10000, 100000 e 1000000 de testes:
+
 <details>
 <summary>Screenshots dos benchmarks</summary>
 
@@ -423,17 +415,17 @@ Foram feitos testes sequenciais para 100, 10000, 100000 e 1000000 de testes:
 
 </details>
 
-| Iterações | Resultado | Robustez | Latência | Throughput | Jitter |
-|---|---|---|---|---|---|
-| 100 | OK | 100% | 171691 ns | 5824.40 inferências/s | 1665304 ns |
-| 10000 | OK | 100% | 6268 ns | 159521.13 inferências/s | 167425 ns |
-| 100000 | OK | 100% | 4215 ns | 237197.97 inferências/s | 52938 ns |
-| 1000000 | Overflow nas métricas | 100% | -249 ns | -4003484.54 inferências/s | 17283 ns |
+| Iterações | Resultado             | Robustez | Latência  | Throughput                | Jitter     |
+| --------- | --------------------- | -------- | --------- | ------------------------- | ---------- |
+| 100       | OK                    | 100%     | 171691 ns | 5824.40 inferências/s     | 1665304 ns |
+| 10000     | OK                    | 100%     | 6268 ns   | 159521.13 inferências/s   | 167425 ns  |
+| 100000    | OK                    | 100%     | 4215 ns   | 237197.97 inferências/s   | 52938 ns   |
+| 1000000   | Overflow nas métricas | 100%     | -249 ns   | -4003484.54 inferências/s | 17283 ns   |
 
 ### Análise dos resultados
 
 A primeira coisa que percebemos é, no teste com um milhão de iterações temos resultados negativo para latência e throughput.
-Isso ocorre devido a um overflow na variável, que possui 32 bits de limite.
+Isso ocorre devido a um overflow na variável, que possui 32 bits de limite. Uma possível solução seria a utilização de variáveis long long.
 
 Além disso os testes com 100, 10.000 e 100.000 inferências mantiveram:
 
@@ -455,12 +447,13 @@ Como o carregamento do modelo ocorre apenas uma vez antes do benchmark, os teste
 Observou-se redução significativa da latência média conforme o número de inferências aumentou:
 
 | Iterações | Latência Média |
-|---|---|
-| 100 | 171691 ns |
-| 10000 | 6268 ns |
-| 100000 | 4215 ns |
+| --------- | -------------- |
+| 100       | 171691 ns      |
+| 10000     | 6268 ns        |
+| 100000    | 4215 ns        |
 
-lorem ipsum bla bla bla
+Isso se dá porque, nas primeiras iterações o código é carregado para o cache de instrução, o r9 é carregado no cache de dados, e tudo isso adiciona latência extra.
+Porém após algumas centenas de iterações tudo que é de multiplo acesso já está no cache, e dessa forma a latência cai drasticamente.
 
 ---
 
@@ -468,11 +461,11 @@ lorem ipsum bla bla bla
 
 Também foi observado aumento progressivo do throughput:
 
-| Iterações | Throughput |
-|---|---|
-| 100 | 5824.40 inferências/s |
-| 10000 | 159521.13 inferências/s |
-| 100000 | 237197.97 inferências/s |
+| Iterações | Throughput              |
+| --------- | ----------------------- |
+| 100       | 5824.40 inferências/s   |
+| 10000     | 159521.13 inferências/s |
+| 100000    | 237197.97 inferências/s |
 
 lorem ipsum bla bla bla
 
@@ -490,13 +483,15 @@ lorem ipsum bla bla bla
 
 Os resultados também demonstraram redução do jitter conforme o aumento do número de inferências:
 
-| Iterações | Jitter |
-|---|---|
-| 100 | 1665304 ns |
-| 10000 | 167425 ns |
-| 100000 | 52938 ns |
+| Iterações | Jitter     |
+| --------- | ---------- |
+| 100       | 1665304 ns |
+| 10000     | 167425 ns  |
+| 100000    | 52938 ns   |
 
-lorem ipsum bla bla
+Aqui, como mencionado na evolução da latência, as primeiras iterações sempre terão uma latência muito maior.
+Por conta disso da primeira até a centésima iteração, teremos uma diminuição muito grande de latência, portanto um grande desvio.
+Já quando aprtimos para uma maior quantidade de iterações, o tempo diminui e começa a estabilizar, então por média, temos um desvio menor.
 
 ## Digito predito diferente do digito esperado
 

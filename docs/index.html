@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Documentação</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
   <div id="nav">
     <div class="nav-group-label">Visão Geral</div>
@@ -204,7 +206,7 @@ make</pre>
         <div class="method-body">
           <p>
             Abre <code>/dev/mem</code> com <code>open(O_RDWR)</code> e mapeia a região de e/s da FPGA
-            com <code>mmap</code>. O ponteiro do mmap é mantido no registrador r9, 
+            com <code>mmap</code>. O ponteiro do mmap é mantido no registrador r9,
             preservado ao longo de toda a sessão.
           </p>
           <p class="ret-ok">Retorna: 0 em caso de sucesso</p>
@@ -285,14 +287,38 @@ make</pre>
           <th>Opcode</th>
           <th>Nome</th>
         </tr>
-        <tr><td>0b000</td><td>STORE_IMG</td></tr>
-        <tr><td>0b001</td><td>STORE_WEIGHTS_ADDR</td></tr>
-        <tr><td>0b010</td><td>STORE_WEIGHTS_VAL</td></tr>
-        <tr><td>0b011</td><td>STORE_BIAS</td></tr>
-        <tr><td>0b100</td><td>STORE_BETA</td></tr>
-        <tr><td>0b101</td><td>START</td></tr>
-        <tr><td>0b110</td><td>STATUS</td></tr>
-        <tr><td>0b111</td><td>NOP</td></tr>
+        <tr>
+          <td>0b000</td>
+          <td>STORE_IMG</td>
+        </tr>
+        <tr>
+          <td>0b001</td>
+          <td>STORE_WEIGHTS_ADDR</td>
+        </tr>
+        <tr>
+          <td>0b010</td>
+          <td>STORE_WEIGHTS_VAL</td>
+        </tr>
+        <tr>
+          <td>0b011</td>
+          <td>STORE_BIAS</td>
+        </tr>
+        <tr>
+          <td>0b100</td>
+          <td>STORE_BETA</td>
+        </tr>
+        <tr>
+          <td>0b101</td>
+          <td>START</td>
+        </tr>
+        <tr>
+          <td>0b110</td>
+          <td>STATUS</td>
+        </tr>
+        <tr>
+          <td>0b111</td>
+          <td>NOP</td>
+        </tr>
       </table>
       <p>
         Os pesos são enviados em duas instruções consecutivas por endereço: primeiro
@@ -315,7 +341,7 @@ make</pre>
           <td>Argumentos e valor de retorno</td>
         </tr>
         <tr>
-          <td class="mono">r4–r7</td>
+          <td class="mono">r4–r6</td>
           <td>Usados para preservar estado entre chamadas</td>
         </tr>
         <tr>
@@ -357,7 +383,7 @@ int main(void) {
 
     /* Inicia inferência e aguarda DONE */
     if (elm_start() < 0) {
-      printf("Erro na inferencia nº %d\n", i+1);
+      printf("Erro na inferencia");
       return -1;
     }
 
@@ -411,4 +437,5 @@ int main(void) {
   </div>
 
 </body>
+
 </html>
