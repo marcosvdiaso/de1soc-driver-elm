@@ -408,17 +408,90 @@ Extrai o dígito predito.
 ## Benchmark Progressivo
 
 Foram feitos testes sequenciais para 100, 10000, 100000 e 1000000 de testes:
-<details><img width="818" height="584" alt="image" src="https://github.com/user-attachments/assets/d1716592-d6a7-40b6-9404-aa06d1fda760" />
+<details>
+<summary>Screenshots dos benchmarks</summary>
+
+<img width="818" height="584" alt="image" src="https://github.com/user-attachments/assets/d1716592-d6a7-40b6-9404-aa06d1fda760" />
 <img width="817" height="583" alt="image" src="https://github.com/user-attachments/assets/6a93d4bf-16a1-43fe-ad24-62da263bb58e" />
 <img width="818" height="584" alt="image" src="https://github.com/user-attachments/assets/d7f1dd62-ae97-4912-8f63-34859d6a9a6f" />
-<img width="818" height="584" alt="image" src="https://github.com/user-attachments/assets/d7082b6e-dfc6-4874-8eec-38de783802b1" /></details>
+<img width="818" height="584" alt="image" src="https://github.com/user-attachments/assets/d7082b6e-dfc6-4874-8eec-38de783802b1" />
+
+</details>
 
 | Iterações | Resultado | Robustez | Latência | Throughput | Jitter |
 |---|---|---|---|---|---|
-| 100 | OK | 100% | 171691 ns | 5824.40 iferências/s | 1665304 ns |
-| 10000 | OK | 100% | 6268 ns | 159521.13 iferências/s | 167425 ns |
-| 100000 | OK | 100% | 4215 ns | 237197.97 iferências/s | 52938 ns |
+| 100 | OK | 100% | 171691 ns | 5824.40 inferências/s | 1665304 ns |
+| 10000 | OK | 100% | 6268 ns | 159521.13 inferências/s | 167425 ns |
+| 100000 | OK | 100% | 4215 ns | 237197.97 inferências/s | 52938 ns |
 | 1000000 | Overflow nas métricas | 100% | -249 ns | -4003484.54 inferências/s | 17283 ns |
+
+### Análise dos resultados
+
+A primeira coisa que percebemos é, no teste com um milhão de iterações temos resultados negativo para latência e throughput.
+Isso ocorre devido a um overflow na variável, que possui 32 bits de limite.
+
+Além disso os testes com 100, 10.000 e 100.000 inferências mantiveram:
+
+- Robustez de 100%
+- Comunicação consistente entre HPS e FPGA
+- Ausência de falhas no protocolo de handshake
+- Ausência de sinais de erro do hardware
+
+Como o carregamento do modelo ocorre apenas uma vez antes do benchmark, os testes medem principalmente:
+
+- Tempo de inferência
+- Comunicação via memória mapeada
+- Sincronização HPS-FPGA
+
+---
+
+#### Evolução da Latência
+
+Observou-se redução significativa da latência média conforme o número de inferências aumentou:
+
+| Iterações | Latência Média |
+|---|---|
+| 100 | 171691 ns |
+| 10000 | 6268 ns |
+| 100000 | 4215 ns |
+
+lorem ipsum bla bla bla
+
+---
+
+#### Evolução do Throughput
+
+Também foi observado aumento progressivo do throughput:
+
+| Iterações | Throughput |
+|---|---|
+| 100 | 5824.40 inferências/s |
+| 10000 | 159521.13 inferências/s |
+| 100000 | 237197.97 inferências/s |
+
+lorem ipsum bla bla bla
+
+---
+
+#### Robustez
+
+Todos os testes válidos apresentaram robustez de 100%, indicando:
+
+lorem ipsum bla bla bla
+
+---
+
+#### Jitter
+
+Os resultados também demonstraram redução do jitter conforme o aumento do número de inferências:
+
+| Iterações | Jitter |
+|---|---|
+| 100 | 1665304 ns |
+| 10000 | 167425 ns |
+| 100000 | 52938 ns |
+
+lorem ipsum bla bla
 
 ## Digito predito diferente do digito esperado
 
