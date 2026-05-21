@@ -5,10 +5,9 @@
 4 - > fluxo de betas
 5 - > fluxo de weights
 6 - > fluxo completo
-7 - > fluxo completo com loop
  */
 
-.equ TEST, 7
+.equ TEST, 6
 
 .section .data
 msg_open_ok: .ascii "Open funcionando\n"
@@ -44,9 +43,6 @@ msg_start_ok_len = . - msg_start_ok
 msg_start_err: .ascii "Start com erro\n"
 msg_start_err_len = . - msg_start_err
 
-msg_loop: .ascii "Loop ok\n"
-msg_loop_len = . - msg_loop
-
 msg_resultado: .ascii "Resultado: "
 msg_resultado_len = . - msg_resultado
 
@@ -71,10 +67,6 @@ W_in:  .incbin "archives/W_in.bin"
 .global main
 
 main:
-	.if TEST >= 7
-	mov r8, #0
-	.endif 
-
     push {r4, lr}
 
     bl   elm_open
@@ -105,7 +97,6 @@ main:
     b .main_done
 .endif
 
-.loop_main:
 .if TEST >= 2
 		ldr  r0, =image
 		bl   elm_store_img
@@ -264,17 +255,6 @@ main:
     svc  #0
 
 .main_done:
-		.if TEST >= 7
-		add r8, r8, #1
-		cmp r8, #1000
-		blt .loop_main
-		mov  r0, #1
-		ldr  r1, =msg_loop
-		mov  r2, #msg_loop_len
-		mov  r7, #4
-		svc  #0
-		.endif 
-
     bl elm_close
 
     mov  r7, #1

@@ -2,10 +2,15 @@
 #include <stdio.h>
 
 int main(void) {
-    int r, d;
+    int result, digit, test;
+    int ok = 0;
+    float rob;
 
     printf("Digito predito esperado: ");
-    scanf("%d", &d);
+    scanf("%d", &digit);
+
+    printf("Quantas vezes deseja rodar o teste? ");
+    scanf("%d", &test);
 
     if (elm_open() < 0) {
         printf("Erro ao abrir /dev/mem\n");
@@ -14,17 +19,22 @@ int main(void) {
 
     elm_reset();
 
-    if (elm_start() < 0) {
-        printf("Erro na inferencia\n");
-        elm_close();
-        return -1;
+    for (int i = 0; i < test; i++){
+      if (elm_start() < 0) {
+        printf("Erro na inferencia nº %d\n", i+1);
+        continue;
+      }
+      result = elm_result();
+      if (result == digit) ok++;
+      printf("Digito predito na inferência de nº %d = %d\n", i+1, result);
     }
 
-    r = elm_result();
+    rob = (ok *100.0f)/ test;
 
-    printf("Resultado: %d\n", r);
-    printf("Esperado: %d\n", d);
-    printf("Correto: %s\n", r == d ? "SIM" : "NAO");
+    printf("------------------------------------------\n");
+    printf("MÉTRICAS DOS TESTES:\n");
+    printf("------------------------------------------\n");
+    printf("Robustez: %.1f%%\n", rob);
 
     elm_close();
     return 0;
