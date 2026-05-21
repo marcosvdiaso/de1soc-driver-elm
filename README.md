@@ -14,7 +14,7 @@
 ---
 
 # 1. Visão Geral
-<details>
+
 [Site de documentação](https://marcosvdiaso.github.io/de1soc-driver-elm/)
 
 O projeto implementa um driver de comunicação entre um processador ARM HPS e um coprocessador ELM embarcado em FPGA na plataforma DE1-SoC.
@@ -30,12 +30,12 @@ Toda a lógica do driver foi implementada em ARM Assembly, incluindo:
 
 O objetivo do projeto é fornecer uma interface de software para controle do acelerador ELM diretamente do Linux embarcado da DE1-SoC.
 O coprocessador ELM utilizado neste projeto foi fornecido pelo docente da disciplina. Mais detalhes sobre ele podem ser vistos [aqui](https://github.com/DestinyWolf/Problema_SD_2026_1/tree/master).
-</details>
+
 
 ---
 
 # 2. Levantamento de Requisitos
-<details>
+
 ## 2.1 Requisitos Funcionais
 
 O sistema deve:
@@ -62,12 +62,12 @@ O sistema deve:
 - Processador ARM Cortex-A9
 - Linux embarcado na DE1-SoC
 - Coprocessador ELM gravado na FPGA
-</details>
+
 
 ---
 
 # 3. Arquitetura do Sistema
-<details>
+
 A arquitetura do projeto é dividida em quatro camadas principais:
 
 1. Aplicação em C (Marco 3)
@@ -141,12 +141,12 @@ Span mapeado:
 ```
 
 A comunicação entre o HPS e o coprocessador ocorre exclusivamente através desses registradores mapeados em memória.
-</details>
+
 
 ---
 
 # 4. Tecnologias e Softwares Utilizados
-<details>
+
 ## Sistema Operacional
 
 | Software | Finalidade |
@@ -185,12 +185,12 @@ A comunicação entre o HPS e o coprocessador ocorre exclusivamente através des
 
 - ARM Assembly
 - C99
-</details>
+
 
 ---
 
 # 5. Estrutura do Projeto
-<details>
+
     
 ```mermaid
 flowchart TD
@@ -214,12 +214,12 @@ flowchart TD
     H --> H1[index.html]
     H --> H2[style.css]
 ```
-</details>
+
 
 ---
 
 # 6. Instalação e Configuração
-<details>
+
 ## Dependências
 
 É necessário o toolchain de cross-compilação para ARM Linux:
@@ -277,12 +277,12 @@ Os pesos do modelo e a imagem de entrada são embutidos no binário em tempo de 
 | `archives/b.bin` | Bias da camada oculta | 128 valores Q4.12 |
 | `archives/beta.bin` | Pesos de saída | 1.280 valores Q4.12 |
 | `archives/images/image.bin` | Imagem de entrada | 784 bytes |
-</details>
+
 
 ---
 
 # 7. Execução
-<details>
+
 Na DE1-SoC:
 
 ```bash
@@ -295,12 +295,12 @@ O programa solicita:
 - Quantidade de inferências
 
 Ao final são exibidas métricas de desempenho.
-</details>
+
 
 ---
 
 # 8. API Pública
-<details>
+
 ## `int elm_open(void)`
 
 Abre `/dev/mem` e realiza `mmap` da região da FPGA.
@@ -349,12 +349,12 @@ Retorno:
 ## `int elm_result(void)`
 
 Extrai o dígito predito.
-</details>
+
 
 ---
 
 # 9. Protocolo de Comunicação
-<details>
+
 ## Registradores
 
 | Registrador | Offset | Função |
@@ -383,7 +383,7 @@ Extrai o dígito predito.
 | 5 | BUSY |
 | 6 | ERROR |
 | [3:0] | Resultado |
-</details>
+
 
 ---
 
