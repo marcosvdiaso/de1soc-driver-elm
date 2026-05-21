@@ -10,6 +10,7 @@
 - [7. Execução](#7-execução)
 - [8. API Pública](#8-api-pública)
 - [9. Protocolo de Comunicação](#9-protocolo-de-comunicação)
+- [10. Testes](#10-testes)
 
 ---
 
@@ -36,7 +37,7 @@ O coprocessador ELM utilizado neste projeto foi fornecido pelo docente da discip
 
 # 2. Levantamento de Requisitos
 
-## 2.1 Requisitos Funcionais
+## Requisitos Funcionais
 
 O sistema deve:
 
@@ -48,7 +49,7 @@ O sistema deve:
 - Ler resultados produzidos pelo coprocessador
 - Medir métricas de desempenho
 
-## 2.2 Requisitos Não Funcionais
+## Requisitos Não Funcionais
 
 O sistema deve:
 
@@ -56,12 +57,15 @@ O sistema deve:
 - Garantir sincronização correta entre ARM e FPGA
 - Operar diretamente sobre Linux embarcado
 
-## 2.3 Requisitos de Hardware
+## Requisitos de Hardware
 
 - FPGA Terasic DE1-SoC
 - Processador ARM Cortex-A9
 - Linux embarcado na DE1-SoC
 - Coprocessador ELM gravado na FPGA
+
+<img width="900" height="1600" alt="image" src="https://github.com/user-attachments/assets/66916bcf-9b86-4318-a544-76f928e431bd" />
+
 
 
 ---
@@ -141,6 +145,16 @@ Span mapeado:
 ```
 
 A comunicação entre o HPS e o coprocessador ocorre exclusivamente através desses registradores mapeados em memória.
+
+---
+
+### CoProcessador
+
+O CoProcessador utilizado pode ser encontrado [aqui](https://github.com/DestinyWolf/Problema_SD_2026_1/tree/master).
+Foram feitas apenas algumas adaptações apra uso do CoProcessador:
+
+- Ele foi fundido junto a um HPS fornecido pelo professor, sendo instanciado no main file da HPS
+- Foram criados 3 PIOs novos no projeto, para data_in, data_out e os signals
 
 
 ---
@@ -289,6 +303,9 @@ Na DE1-SoC:
 sudo ./driver
 ```
 
+<img width="817" height="583" alt="image" src="https://github.com/user-attachments/assets/b214edc4-6657-4f3b-b0f8-5c8561a451ca" />
+
+
 O programa solicita:
 
 - Dígito esperado
@@ -384,6 +401,30 @@ Extrai o dígito predito.
 | 6 | ERROR |
 | [3:0] | Resultado |
 
+---
+
+# 10. Testes
+
+## Benchmark Progressivo
+
+Foram feitos testes sequenciais para 100 testes, 10000 testes, 100000 e 1000000 de testes:
+<details><img width="818" height="584" alt="image" src="https://github.com/user-attachments/assets/d1716592-d6a7-40b6-9404-aa06d1fda760" />
+<img width="817" height="583" alt="image" src="https://github.com/user-attachments/assets/6a93d4bf-16a1-43fe-ad24-62da263bb58e" />
+<img width="818" height="584" alt="image" src="https://github.com/user-attachments/assets/d7f1dd62-ae97-4912-8f63-34859d6a9a6f" />
+<img width="818" height="584" alt="image" src="https://github.com/user-attachments/assets/d7082b6e-dfc6-4874-8eec-38de783802b1" /></details>
+
+| Iterações | Resultado | Robustez | Latência | Throughput | Jitter |
+|---|---|---|---|---|---|
+| 100 | OK | 100% | 171691 ns | 5824.40 iferências/s | 1665304 ns |
+| 10000 | OK | 100% | 6268 ns | 159521.13 iferências/s | 167425 ns |
+| 100000 | OK | 100% | 4215 ns | 237197.97 iferências/s | 52938 ns |
+| 1000000 | Overflow nas métricas | 100% | -249 ns | -4003484.54 inferências/s | 17283 ns |
+
+## Digito predito diferente do digito esperado
+
+<img width="818" height="584" alt="image" src="https://github.com/user-attachments/assets/08e1e301-5de6-402a-bf0b-f8d673ddd70f" />
+
+Caso o digito predito seja diferente do digito esperado, teremos uma robustez de 0% nas métricas finais.
 
 ---
 
