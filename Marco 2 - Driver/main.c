@@ -1,3 +1,7 @@
+#ifndef _POSIX_C_SOUCE
+#define _POSIX_C_SOURCE 199309L
+#endif
+
 #include "driver.h"
 #include <stdio.h>
 #include <time.h>
@@ -30,7 +34,7 @@ int main(void) {
     elm_reset();
 
     if (elm_load() < 0){
-      printf("Erro ao carregar arquivos.\n")
+      printf("Erro ao carregar arquivos.\n");
       return -1;
     }
 
