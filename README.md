@@ -8,6 +8,9 @@
 - [5. Estrutura do Projeto](#5-estrutura-do-projeto)
 - [6. Instalação e Configuração](#6-instalação-e-configuração)
 - [7. Execução](#7-execução)
+
+TODO: Detalhar assembly
+
 - [8. API Pública](#8-api-pública)
 - [9. Protocolo de Comunicação](#9-protocolo-de-comunicação)
 - [10. Testes](#10-testes)
