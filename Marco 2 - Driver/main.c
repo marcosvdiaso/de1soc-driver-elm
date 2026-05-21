@@ -45,9 +45,9 @@ int main(void) {
 
     
     rob = (ok *100.0f)/ test;
-    lat /= test;
     s = lat / 1e9;
     thr = test / s;
+    lat /= test;
     
     for (int i =0; i < test; i++){
       diff = lats[i] - lat;
