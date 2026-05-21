@@ -40,6 +40,42 @@ TEMPO DE PULSO PARA SIGNALS:
 path_devmem:
     .asciz "/dev/mem"
 
+msg_open_ok: .ascii "Open funcionando\n"
+msg_open_ok_len = . - msg_open_ok
+msg_open_err: .ascii "Open ruim\n"
+msg_open_err_len = . - msg_open_err
+
+msg_reset_ok: .ascii "Reset funcionando\n"
+msg_reset_ok_len = . - msg_reset_ok
+
+msg_img_ok: .ascii "Imagens guardadas\n"
+msg_img_ok_len  = . - msg_img_ok
+msg_img_err: .ascii "Imagens naõ guardadas\n"
+msg_img_err_len = . - msg_img_err
+
+msg_bias_ok: .ascii "Bias guardados\n"
+msg_bias_ok_len = . - msg_bias_ok
+msg_bias_err: .ascii "Bias não guardados\n"
+msg_bias_err_len = . - msg_bias_err
+
+msg_beta_ok: .ascii "Betas guardadosK\n"
+msg_beta_ok_len = . - msg_beta_ok
+msg_beta_err: .ascii "Sobrou nada pro beta\n"
+msg_beta_err_len = . - msg_beta_err
+
+msg_wei_ok: .ascii "Pesos guardados\n"
+msg_wei_ok_len  = . - msg_wei_ok
+msg_wei_err: .ascii "Pesos não guardadosO\n"
+msg_wei_err_len = . - msg_wei_err
+
+msg_start_ok: .ascii "Start ok\n"
+msg_start_ok_len = . - msg_start_ok
+msg_start_err: .ascii "Start com erro\n"
+msg_start_err_len = . - msg_start_err
+
+msg_resultado: .ascii "Resultado: "
+msg_resultado_len = . - msg_resultado
+
 .section .bss
 fd_val: .skip 4      
 
@@ -63,6 +99,12 @@ fd_val: .skip 4
 
 .equ PULSE_WAIT, 32
 
+.section .rodata
+W_in: .incbin "archives/W_in.bin"
+bbin:    .incbin "archives/b.bin"
+beta: .incbin "archives/beta.bin"
+image: .incbin "archives/images/image.bin"
+
 .section .text
 
 .global elm_open
@@ -74,6 +116,37 @@ fd_val: .skip 4
 .global elm_store_weights
 .global elm_start
 .global elm_result
+.global elm_load
+
+elm_load:
+    push {r4, lr}
+
+    ldr  r0, =image
+    bl   elm_store_img
+    cmp  r0, #0
+    blt  .elm_load_err
+
+    ldr  r0, =bbin
+    bl   elm_store_bias
+    cmp  r0, #0
+    blt  .elm_load_err
+
+    ldr  r0, =beta
+    bl   elm_store_beta
+    cmp  r0, #0
+    blt  .elm_load_err
+
+    ldr  r0, =W_in
+    bl   elm_store_weights
+    cmp  r0, #0
+    blt  .elm_load_err
+
+    mov  r0, #0
+    pop  {r4, pc}
+
+.elm_load_err:
+    mvn  r0, #0
+    pop  {r4, pc}
 
 /*
 elm_open:
@@ -406,7 +479,3 @@ elm_result:
 .er_err:
     mvn  r0, #0
     bx   lr
-
-
-
-    
