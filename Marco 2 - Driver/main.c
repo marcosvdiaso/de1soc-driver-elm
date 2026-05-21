@@ -29,6 +29,11 @@ int main(void) {
 
     elm_reset();
 
+    if (elm_load() < 0){
+      printf("Erro ao carregar arquivos.\n")
+      return -1;
+    }
+
     for (int i = 0; i < test; i++){
       clock_gettime(CLOCK_MONOTONIC, &t1_lat);
       if (elm_start() < 0) {

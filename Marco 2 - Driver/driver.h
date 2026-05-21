@@ -10,6 +10,7 @@ void elm_close(void);
 void elm_reset(void);
 int elm_start(void);
 int elm_result(void);
+int elm_load(void);
 
 #ifdef __cplusplus
 }
