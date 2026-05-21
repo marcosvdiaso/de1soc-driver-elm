@@ -10,6 +10,7 @@ int main(void) {
     float rob;
     struct timespec t1_lat, t2_lat;
     long lat = 0;
+    double s, thr;
 
     printf("Digito predito esperado: ");
     scanf("%d", &digit);
@@ -39,12 +40,15 @@ int main(void) {
 
     rob = (ok *100.0f)/ test;
     lat /= test;
+    s = lat / 1e9;
+    thr = test / s;
 
     printf("------------------------------------------\n");
     printf("MÉTRICAS DOS TESTES:\n");
     printf("------------------------------------------\n");
     printf("Robustez: %.1f%%\n", rob);
     printf("Latência: %ld ns\n", lat);
+    printf("Throughput: %.2f inferencias/s\n", thr);
 
     elm_close();
     return 0;
