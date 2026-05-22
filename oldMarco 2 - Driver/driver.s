@@ -85,6 +85,11 @@ image: .incbin "archives/images/image.bin"
 elm_load:
     push {r4, lr}
 
+    ldr  r0, =image
+    bl   elm_store_img
+    cmp  r0, #0
+    blt  .elm_load_err
+
     ldr  r0, =bbin
     bl   elm_store_bias
     cmp  r0, #0
@@ -386,11 +391,6 @@ elm_start:
  */
 elm_start:
     push {r4, r5, r7, lr}
-
-    ldr  r0, =image
-    bl   elm_store_img
-    cmp  r0, #0
-    blt  .elm_load_err
 
     mov  r1, #2
     str  r1, [r9, #SIGNALS]
