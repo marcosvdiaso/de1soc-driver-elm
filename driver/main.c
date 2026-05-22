@@ -14,7 +14,7 @@ int main(void) {
     int ok = 0;
     float rob;
     struct timespec t1_lat, t2_lat;
-    long lat = 0;
+    double lat = 0;
     double s, thr, diff, jitter;
     double var = 0;
 
@@ -24,7 +24,7 @@ int main(void) {
     printf("Quantas vezes deseja rodar o teste? ");
     scanf("%d", &test);
 
-    long lats[test];
+    double lats[test];
 
     if (elm_open() < 0) {
         printf("Erro ao abrir /dev/mem\n");
@@ -33,13 +33,13 @@ int main(void) {
 
     elm_reset();
 
+    if (elm_load() < 0){
+      printf("Erro ao carregar arquivos.\n");
+      return -1;
+    }
+
     for (int i = 0; i < test; i++){
       clock_gettime(CLOCK_MONOTONIC, &t1_lat);
-      if (elm_load() < 0){
-        printf("Erro ao carregar arquivos.\n");
-        return -1;
-      }
-
       if (elm_start() < 0) {
         printf("Erro na inferencia nº %d\n", i+1);
         continue;
@@ -68,7 +68,7 @@ int main(void) {
     printf("MÉTRICAS DOS TESTES:\n");
     printf("------------------------------------------\n");
     printf("Robustez: %.1f%%\n", rob);
-    printf("Latência: %ld ns\n", lat);
+    printf("Latência: %.0f ns\n", lat);
     printf("Throughput: %.2f inferencias/s\n", thr);
     printf("Desvio padrão: %.0f ns\n", jitter);
 

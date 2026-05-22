@@ -28,9 +28,9 @@ OPCODES INSTS.:
 	* 111 -> NOP
 
 TEMPO DE PULSO PARA SIGNALS:
-	* 50MHz = 20ns (FPGA)
-	* 800MHZz = 1.25ns (Dual-core ARM Cortex-A9 MPCore processor)
-	* 20/1.25 = 16, assumindo 32 para margem de segurança
+	* 50MHz (FPGA)
+	* 800MHZz (HPS)
+	* / = 16, mas vou assumir 32 para margem de segurança
 	* https://www.manualslib.com/manual/1485906/Terasic-De1-Soc.html
 -------------------------------------------------------------------------------
 */
@@ -60,7 +60,6 @@ fd_val: .skip 4
 .equ OP_START,              0b101
 .equ OP_STATUS,             0b110
 .equ OP_NOP,                0b111
-
 .equ PULSE_WAIT, 32
 
 .section .rodata
