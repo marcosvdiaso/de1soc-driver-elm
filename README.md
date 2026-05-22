@@ -20,8 +20,6 @@ TODO: Detalhar assembly
 
 # 1. Visão Geral
 
-[Site de documentação](https://marcosvdiaso.github.io/de1soc-driver-elm/)
-
 O projeto implementa um driver de comunicação entre um processador ARM HPS e um coprocessador ELM embarcado em FPGA na plataforma DE1-SoC.
 
 Toda a lógica do driver foi implementada em ARM Assembly, incluindo:
