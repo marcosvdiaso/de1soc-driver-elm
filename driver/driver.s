@@ -20,7 +20,7 @@ BITS DATA_OUT:
 OPCODES INSTS.:
 	* 000 -> STORE_IMG
 	* 001 -> STORE_WEIGHTS_ADDR
-	* 010 -> STORE_W	EIGHTS_VAL
+	* 010 -> STORE_WEIGHTS_VAL
 	* 011 -> STORE_BIAS
 	* 100 -> STORE_BETA
 	* 101 -> START
@@ -29,8 +29,8 @@ OPCODES INSTS.:
 
 TEMPO DE PULSO PARA SIGNALS:
 	* 50MHz (FPGA)
-	* 800MHZz (HPS)
-	* / = 16, mas vou assumir 32 para margem de segurança
+	* 800MHz (HPS)
+	* /= 16, mas vou assumir 32 para margem de segurança
 	* https://www.manualslib.com/manual/1485906/Terasic-De1-Soc.html
 -------------------------------------------------------------------------------
 */
@@ -80,6 +80,11 @@ image: .incbin "archives/images/image.bin"
 .global elm_start
 .global elm_result
 .global elm_load
+
+/*
+elm_load:
+	-> Responsável por carregar os arquivos de pesos, bias e betas
+ */
 
 elm_load:
     push {r4, lr}
