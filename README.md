@@ -9,12 +9,11 @@
 - [5. Estrutura do Projeto](#5-estrutura-do-projeto)
 - [6. Instalação e Configuração](#6-instalação-e-configuração)
 - [7. Execução](#7-execução)
-
-TODO: Detalhar assembly
-
-- [8. API Pública](#8-api-pública)
-- [9. Protocolo de Comunicação](#9-protocolo-de-comunicação)
-- [10. Testes](#10-testes)
+- [8. Assembly](#8-assembly)
+- [9. API Pública](#9-api-pública)
+- [10. Protocolo de Comunicação](#10-protocolo-de-comunicação)
+- [11. Testes](#11-testes)
+- [12. Conclusão](#12-conclusao)
 
 ---
 
@@ -309,7 +308,47 @@ Ao final são exibidas métricas de desempenho.
 
 ---
 
-# 8. API Pública
+# 8. Assembly
+
+## Montagem de Instruções — `build_instruction`
+
+Foi criada uma função genérica para montagem das instruções de 32 bits enviadas ao coprocessador. Ela recebe os campos já isolados e os posiciona nos bits corretos via shift e OR, funcionando como uma concatenação de campos:
+
+| Registrador | Conteúdo          |
+| ----------- | ----------------- |
+| r0          | Opcode            |
+| r1          | Endereço          |
+| r2          | Valor             |
+| r3          | Shift do endereço |
+| r4          | Shift do valor    |
+
+---
+
+## Protocolo de Handshake — `send_instruction`
+
+Após montar a instrução, ela é enviada respeitando o protocolo de handshake com o coprocessador. A instrução é escrita em `DATA_IN`, o enable é levantado e o driver aguarda o busy subir via polling, confirmando que a FPGA capturou a instrução. Em seguida o enable é baixado e o driver aguarda o busy cair antes de retornar.
+
+---
+
+## Instruções de Load
+
+A maioria das funções de store segue o mesmo padrão, um loop lendo os dados do buffer e chamando `build_instruction` com os parâmetros corretos, `elm_store_weights` é a exceção, envia duas instruções por peso: primeiro o endereço (`STORE_WEIGHTS_ADDR`) e depois o valor (`STORE_WEIGHTS_VAL`), em sequência no mesmo loop.
+
+---
+
+## Início da Inferência — `elm_start`
+
+Pulsa `clr_operation` para limpar flags anteriores, envia a imagem via `elm_store_img`, dispara a instrução START e aguarda `DONE=1` em `DATA_OUT` via polling. Retorna `-1` se `ERROR=1` for detectado.
+
+---
+
+## Leitura do Resultado — `elm_result`
+
+Lê `DATA_OUT` e extrai o dígito predito dos bits `[3:0]`. Não é necessária uma instrução STATUS pois `DATA_OUT` é atualizado continuamente pelo coprocessador.
+
+---
+
+# 9. API Pública
 
 ## `int elm_open(void)`
 
@@ -336,7 +375,7 @@ Gera pulso de reset no coprocessador.
 
 ## `int elm_load(void)`
 
-Envia imagem, bias, beta e pesos para FPGA.
+Envia bias, beta e pesos para a FPGA.
 
 Retorno:
 
@@ -347,7 +386,7 @@ Retorno:
 
 ## `int elm_start(void)`
 
-Inicia inferência e aguarda finalização.
+Envia a imagem, inicia inferência e aguarda finalização.
 
 Retorno:
 
@@ -362,7 +401,7 @@ Extrai o dígito predito.
 
 ---
 
-# 9. Protocolo de Comunicação
+# 10. Protocolo de Comunicação
 
 ## Registradores
 
@@ -395,11 +434,9 @@ Extrai o dígito predito.
 
 ---
 
-# 10. Testes
+# 11. Testes
 
 ## Benchmark Progressivo
-
-TODO: Testes com load alem dos de inferência
 
 Foram feitos testes sequenciais para 100, 10000, 100000 e 1000000 de testes:
 
@@ -413,19 +450,18 @@ Foram feitos testes sequenciais para 100, 10000, 100000 e 1000000 de testes:
 
 </details>
 
-| Iterações | Resultado             | Robustez | Latência  | Throughput                | Jitter     |
-| --------- | --------------------- | -------- | --------- | ------------------------- | ---------- |
-| 100       | OK                    | 100%     | 171691 ns | 5824.40 inferências/s     | 1665304 ns |
-| 10000     | OK                    | 100%     | 6268 ns   | 159521.13 inferências/s   | 167425 ns  |
-| 100000    | OK                    | 100%     | 4215 ns   | 237197.97 inferências/s   | 52938 ns   |
-| 1000000   | Overflow nas métricas | 100%     | -249 ns   | -4003484.54 inferências/s | 17283 ns   |
+| Iterações | Resultado             | Robustez | Latência   | Throughput              | Jitter     |
+| --------- | --------------------- | -------- | ---------- | ----------------------- | ---------- |
+| 100       | OK                    | 100%     | 1745688 ns | 572.84 inferências/s    | 1661301 ns |
+| 10000     | OK                    | 100%     | 195873 ns  | 5105.34 inferências/s   | 1299549 ns |
+| 100000    | Overflow nas métricas | 100%     | -18313 ns  | -54604.40 inferências/s | 1548452 ns |
 
 ### Análise dos resultados
 
-A primeira coisa que percebemos é, no teste com um milhão de iterações temos resultados negativo para latência e throughput.
-Isso ocorre devido a um overflow na variável, que possui 32 bits de limite. Uma possível solução seria a utilização de variáveis long long.
+A primeira coisa que percebemos é, no teste com 100.000 de iterações temos resultados negativo para latência e throughput.
+Isso ocorre devido a um overflow na variável, que possui 32 bits de limite. Porém esse problema foi posteriormente resolvido trocando o tipo da variável para double.
 
-Além disso os testes com 100, 10.000 e 100.000 inferências mantiveram:
+Além disso os testes mantiveram:
 
 - Robustez de 100%
 - Comunicação consistente entre HPS e FPGA
@@ -440,40 +476,64 @@ Como o carregamento do modelo ocorre apenas uma vez antes do benchmark, os teste
 
 ---
 
-#### Evolução da Latência
-
-Observou-se redução significativa da latência média conforme o número de inferências aumentou:
+#### Latência
 
 | Iterações | Latência Média |
-| --------- | -------------- |
-| 100       | 171691 ns      |
-| 10000     | 6268 ns        |
-| 100000    | 4215 ns        |
+| --------- | -------------- | ---------- |
+| 100       | 1745688 ns     |
+| 10000     | 195873 ns      |
+| 100000    | -18313 ns      | \*overflow |
 
-Isso se dá porque, nas primeiras iterações o código é carregado para o cache de instrução, o r9 é carregado no cache de dados, e tudo isso adiciona latência extra.
-Porém após algumas centenas de iterações tudo que é de multiplo acesso já está no cache, e dessa forma a latência cai drasticamente.
+A latência é medida usando `clock_gettime(CLOCK_MONOTONIC)` antes e depois de cada chamada ao `elm_start`. A diferença entre os dois instantes é calculada em nanosegundos e acumulada para posterior cálculo da média:
+
+```c
+clock_gettime(CLOCK_MONOTONIC, &t1_lat);
+elm_start();
+clock_gettime(CLOCK_MONOTONIC, &t2_lat);
+lats[i] = (t2_lat.tv_sec - t1_lat.tv_sec) * 1e9 +
+           (t2_lat.tv_nsec - t1_lat.tv_nsec);
+lat += lats[i];
+```
+
+A latência média é calculada ao final dividindo o total acumulado pelo número de testes:
+
+```c
+lat /= test;
+```
 
 ---
 
-#### Evolução do Throughput
+#### Throughput
 
 Também foi observado aumento progressivo do throughput:
 
 | Iterações | Throughput              |
-| --------- | ----------------------- |
-| 100       | 5824.40 inferências/s   |
-| 10000     | 159521.13 inferências/s |
-| 100000    | 237197.97 inferências/s |
+| --------- | ----------------------- | ---------- |
+| 100       | 572.84 inferências/s    |
+| 10000     | 5105.34 inferências/s   |
+| 100000    | -54604.40 inferências/s | \*overflow |
 
-lorem ipsum bla bla bla
+O throughput é calculado dividindo o número de inferências pela latência total convertida em segundos:
+
+```c
+s   = lat / 1e9;
+thr = test / s;
+```
 
 ---
 
 #### Robustez
 
-Todos os testes válidos apresentaram robustez de 100%, indicando:
+Todos os testes válidos apresentaram robustez de 100%.
+Em caso de imagem incorreta, sempre apresenta 0%.
+Esses dados mostram a consistência da inferência.
 
-lorem ipsum bla bla bla
+A robustez é calculada contando o número de inferências corretas e dividindo pelo total de testes:
+
+```c
+if (result == digit) ok++;
+rob = (ok * 100.0f) / test;
+```
 
 ---
 
@@ -483,13 +543,21 @@ Os resultados também demonstraram redução do jitter conforme o aumento do nú
 
 | Iterações | Jitter     |
 | --------- | ---------- |
-| 100       | 1665304 ns |
-| 10000     | 167425 ns  |
-| 100000    | 52938 ns   |
+| 100       | 1661301 ns |
+| 10000     | 1299549 ns |
+| 100000    | 1548452 ns |
 
-Aqui, como mencionado na evolução da latência, as primeiras iterações sempre terão uma latência muito maior.
-Por conta disso da primeira até a centésima iteração, teremos uma diminuição muito grande de latência, portanto um grande desvio.
-Já quando aprtimos para uma maior quantidade de iterações, o tempo diminui e começa a estabilizar, então por média, temos um desvio menor.
+O jitter é o desvio padrão da latência. Para calculá-lo, todas as latências individuais são armazenadas em um array durante o loop. Após o loop, calcula-se a diferença de cada amostra em relação à média, eleva-se ao quadrado, acumula-se na variância e ao fim aplica-se a fórmula do desvio padrão:
+
+```c
+for (int i = 0; i < test; i++) {
+    diff = lats[i] - lat;
+    var += diff * diff;
+}
+jitter = sqrt(var / test);
+```
+
+---
 
 ## Digito predito diferente do digito esperado
 
@@ -498,6 +566,15 @@ Já quando aprtimos para uma maior quantidade de iterações, o tempo diminui e 
 Caso o digito predito seja diferente do digito esperado, teremos uma robustez de 0% nas métricas finais.
 
 ---
+
+# 12. Conclusão
+
+Por fim, após testes é possível conlcuir que o driver atende aos requisitos funcionais estabelecidos:
+
+- Inicializa o hardware via `/dev/mem` e `mmap` opera corretamente em todas as execuções
+- O protocolo de handshake funciona corretamente
+- A inferência retorna resultados consistentes ao longo de todas iterações
+- O sistema operou corretamente sob a placa
 
 # Autor
 
