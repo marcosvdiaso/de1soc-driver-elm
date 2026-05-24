@@ -438,15 +438,14 @@ Extrai o dígito predito.
 
 ## Benchmark Progressivo
 
-Foram feitos testes sequenciais para 100, 10000, 100000 e 1000000 de testes:
+Foram feitos testes sequenciais para 100, 10000, 100000 de testes:
 
 <details>
 <summary>Screenshots dos benchmarks</summary>
 
-<img width="818" height="584" alt="image" src="https://github.com/user-attachments/assets/d1716592-d6a7-40b6-9404-aa06d1fda760" />
-<img width="817" height="583" alt="image" src="https://github.com/user-attachments/assets/6a93d4bf-16a1-43fe-ad24-62da263bb58e" />
-<img width="818" height="584" alt="image" src="https://github.com/user-attachments/assets/d7f1dd62-ae97-4912-8f63-34859d6a9a6f" />
-<img width="818" height="584" alt="image" src="https://github.com/user-attachments/assets/d7082b6e-dfc6-4874-8eec-38de783802b1" />
+<img width="1390" height="994" alt="image" src="https://github.com/user-attachments/assets/baad532c-23f1-47cb-9023-ae8402683f9b" />
+<img width="1390" height="994" alt="image" src="https://github.com/user-attachments/assets/8b524705-8560-4149-a237-531bc6629d74" />
+<img width="1390" height="994" alt="image" src="https://github.com/user-attachments/assets/b4c8a361-378a-4aa9-9745-819d39059e75" />
 
 </details>
 
