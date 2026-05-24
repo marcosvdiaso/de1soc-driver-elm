@@ -475,10 +475,10 @@ Como o carregamento do modelo ocorre apenas uma vez antes do benchmark, os teste
 #### Latência
 
 | Iterações | Latência Média |
-| --------- | -------------- | ---------- |
+| --------- | -------------- |
 | 100       | 1745688 ns     |
 | 10000     | 195873 ns      |
-| 100000    | -18313 ns      | \*overflow |
+| 100000    | -18313 ns      |
 
 A latência é medida usando `clock_gettime(CLOCK_MONOTONIC)` antes e depois de cada chamada ao `elm_start`. A diferença entre os dois instantes é calculada em nanosegundos e acumulada para posterior cálculo da média:
 
@@ -504,10 +504,10 @@ lat /= test;
 Também foi observado aumento progressivo do throughput:
 
 | Iterações | Throughput              |
-| --------- | ----------------------- | ---------- |
+| --------- | ----------------------- |
 | 100       | 572.84 inferências/s    |
 | 10000     | 5105.34 inferências/s   |
-| 100000    | -54604.40 inferências/s | \*overflow |
+| 100000    | -54604.40 inferências/s |
 
 O throughput é calculado dividindo o número de inferências pela latência total convertida em segundos:
 
