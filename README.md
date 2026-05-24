@@ -220,9 +220,6 @@ flowchart TD
     G --> G4[images]
     G4 --> G5[image.bin]
 
-    A --> H[docs]
-    H --> H1[index.html]
-    H --> H2[style.css]
 ```
 
 ---
