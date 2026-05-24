@@ -1,4 +1,4 @@
-# DE1-SoC ELM Driver ![Platform](https://img.shields.io/badge/platform-DE1--SoC-blue) ![Language](https://img.shields.io/badge/language-ARM%20Assembly-orange) ![OS](https://img.shields.io/badge/os-Linux-lightgrey)
+<img width="1390" height="994" alt="image" src="https://github.com/user-attachments/assets/738fbb2b-4f0e-40e6-8cd3-53182b854ae0" /># DE1-SoC ELM Driver ![Platform](https://img.shields.io/badge/platform-DE1--SoC-blue) ![Language](https://img.shields.io/badge/language-ARM%20Assembly-orange) ![OS](https://img.shields.io/badge/os-Linux-lightgrey)
 
 # Sumário
 
@@ -13,7 +13,7 @@
 - [9. API Pública](#9-api-pública)
 - [10. Protocolo de Comunicação](#10-protocolo-de-comunicação)
 - [11. Testes](#11-testes)
-- [12. Conclusão](#12-conclusao)
+- [12. Conclusão](#12-conclusão)
 
 ---
 
