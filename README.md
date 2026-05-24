@@ -1,4 +1,4 @@
-<img width="1390" height="994" alt="image" src="https://github.com/user-attachments/assets/738fbb2b-4f0e-40e6-8cd3-53182b854ae0" /># DE1-SoC ELM Driver ![Platform](https://img.shields.io/badge/platform-DE1--SoC-blue) ![Language](https://img.shields.io/badge/language-ARM%20Assembly-orange) ![OS](https://img.shields.io/badge/os-Linux-lightgrey)
+# DE1-SoC ELM Driver ![Platform](https://img.shields.io/badge/platform-DE1--SoC-blue) ![Language](https://img.shields.io/badge/language-ARM%20Assembly-orange) ![OS](https://img.shields.io/badge/os-Linux-lightgrey)
 
 # Sumário
 
