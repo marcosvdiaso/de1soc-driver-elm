@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <math.h>
+#include "vga.h"
 
 // https://man7.org/linux/man-pages/man3/clock_gettime.3.html
 

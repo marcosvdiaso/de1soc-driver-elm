@@ -7,5 +7,6 @@ void elm_reset(void);
 int elm_start(void);
 int elm_result(void);
 int elm_load(void);
+void *elm_mmap(void);
 
 #endif

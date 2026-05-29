@@ -80,6 +80,7 @@ image: .incbin "archives/images/image.bin"
 .global elm_start
 .global elm_result
 .global elm_load
+.global elm_mmap
 
 /*
 elm_load:
@@ -447,3 +448,8 @@ elm_result:
 .er_err:
     mvn  r0, #0
     bx   lr
+
+/* */
+elm_mmap:
+    mov r0, r9
+    bx lr
