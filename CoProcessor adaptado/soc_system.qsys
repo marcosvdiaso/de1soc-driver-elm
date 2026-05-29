@@ -157,6 +157,38 @@
          type = "String";
       }
    }
+   element vga_ctrl
+   {
+      datum _sortIndex
+      {
+         value = "11";
+         type = "int";
+      }
+   }
+   element vga_ctrl.s1
+   {
+      datum baseAddress
+      {
+         value = "48";
+         type = "String";
+      }
+   }
+   element vga_done
+   {
+      datum _sortIndex
+      {
+         value = "12";
+         type = "int";
+      }
+   }
+   element vga_done.s1
+   {
+      datum baseAddress
+      {
+         value = "64";
+         type = "String";
+      }
+   }
 }
 ]]></parameter>
  <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
@@ -221,6 +253,16 @@
  <interface
    name="signals"
    internal="signals.external_connection"
+   type="conduit"
+   dir="end" />
+ <interface
+   name="vga_ctrl"
+   internal="vga_ctrl.external_connection"
+   type="conduit"
+   dir="end" />
+ <interface
+   name="vga_done"
+   internal="vga_done.external_connection"
    type="conduit"
    dir="end" />
  <module name="clk_0" kind="clock_source" version="25.1" enabled="1">
@@ -896,6 +938,34 @@
    enabled="1">
   <parameter name="id" value="-1395322110" />
  </module>
+ <module name="vga_ctrl" kind="altera_avalon_pio" version="25.1" enabled="1">
+  <parameter name="bitClearingEdgeCapReg" value="false" />
+  <parameter name="bitModifyingOutReg" value="false" />
+  <parameter name="captureEdge" value="false" />
+  <parameter name="clockRate" value="50000000" />
+  <parameter name="direction" value="Output" />
+  <parameter name="edgeType" value="RISING" />
+  <parameter name="generateIRQ" value="false" />
+  <parameter name="irqType" value="LEVEL" />
+  <parameter name="resetValue" value="0" />
+  <parameter name="simDoTestBenchWiring" value="false" />
+  <parameter name="simDrivenValue" value="0" />
+  <parameter name="width" value="32" />
+ </module>
+ <module name="vga_done" kind="altera_avalon_pio" version="25.1" enabled="1">
+  <parameter name="bitClearingEdgeCapReg" value="false" />
+  <parameter name="bitModifyingOutReg" value="false" />
+  <parameter name="captureEdge" value="false" />
+  <parameter name="clockRate" value="50000000" />
+  <parameter name="direction" value="Input" />
+  <parameter name="edgeType" value="RISING" />
+  <parameter name="generateIRQ" value="false" />
+  <parameter name="irqType" value="LEVEL" />
+  <parameter name="resetValue" value="0" />
+  <parameter name="simDoTestBenchWiring" value="false" />
+  <parameter name="simDrivenValue" value="0" />
+  <parameter name="width" value="1" />
+ </module>
  <connection
    kind="avalon"
    version="25.1"
@@ -948,6 +1018,24 @@
    end="data_in.s1">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x0000" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="25.1"
+   start="hps_0.h2f_lw_axi_master"
+   end="vga_ctrl.s1">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x0030" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="25.1"
+   start="hps_0.h2f_lw_axi_master"
+   end="vga_done.s1">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x0040" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1010,6 +1098,8 @@
  <connection kind="clock" version="25.1" start="clk_0.clk" end="data_in.clk" />
  <connection kind="clock" version="25.1" start="clk_0.clk" end="signals.clk" />
  <connection kind="clock" version="25.1" start="clk_0.clk" end="data_out.clk" />
+ <connection kind="clock" version="25.1" start="clk_0.clk" end="vga_ctrl.clk" />
+ <connection kind="clock" version="25.1" start="clk_0.clk" end="vga_done.clk" />
  <connection
    kind="clock"
    version="25.1"
@@ -1084,6 +1174,16 @@
    version="25.1"
    start="clk_0.clk_reset"
    end="data_out.reset" />
+ <connection
+   kind="reset"
+   version="25.1"
+   start="clk_0.clk_reset"
+   end="vga_ctrl.reset" />
+ <connection
+   kind="reset"
+   version="25.1"
+   start="clk_0.clk_reset"
+   end="vga_done.reset" />
  <connection
    kind="reset"
    version="25.1"

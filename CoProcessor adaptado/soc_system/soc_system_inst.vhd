@@ -1,6 +1,8 @@
 	component soc_system is
 		port (
 			clk_clk                               : in    std_logic                     := 'X';             -- clk
+			data_in_export                        : out   std_logic_vector(31 downto 0);                    -- export
+			data_out_export                       : in    std_logic_vector(31 downto 0) := (others => 'X'); -- export
 			hps_0_f2h_cold_reset_req_reset_n      : in    std_logic                     := 'X';             -- reset_n
 			hps_0_f2h_debug_reset_req_reset_n     : in    std_logic                     := 'X';             -- reset_n
 			hps_0_f2h_stm_hw_events_stm_hwevents  : in    std_logic_vector(27 downto 0) := (others => 'X'); -- stm_hwevents
@@ -78,15 +80,17 @@
 			memory_mem_dm                         : out   std_logic_vector(3 downto 0);                     -- mem_dm
 			memory_oct_rzqin                      : in    std_logic                     := 'X';             -- oct_rzqin
 			reset_reset_n                         : in    std_logic                     := 'X';             -- reset_n
-			data_in_export                        : out   std_logic_vector(31 downto 0);                    -- export
 			signals_export                        : out   std_logic_vector(2 downto 0);                     -- export
-			data_out_export                       : in    std_logic_vector(31 downto 0) := (others => 'X')  -- export
+			vga_ctrl_export                       : out   std_logic_vector(31 downto 0);                    -- export
+			vga_done_export                       : in    std_logic                     := 'X'              -- export
 		);
 	end component soc_system;
 
 	u0 : component soc_system
 		port map (
 			clk_clk                               => CONNECTED_TO_clk_clk,                               --                       clk.clk
+			data_in_export                        => CONNECTED_TO_data_in_export,                        --                   data_in.export
+			data_out_export                       => CONNECTED_TO_data_out_export,                       --                  data_out.export
 			hps_0_f2h_cold_reset_req_reset_n      => CONNECTED_TO_hps_0_f2h_cold_reset_req_reset_n,      --  hps_0_f2h_cold_reset_req.reset_n
 			hps_0_f2h_debug_reset_req_reset_n     => CONNECTED_TO_hps_0_f2h_debug_reset_req_reset_n,     -- hps_0_f2h_debug_reset_req.reset_n
 			hps_0_f2h_stm_hw_events_stm_hwevents  => CONNECTED_TO_hps_0_f2h_stm_hw_events_stm_hwevents,  --   hps_0_f2h_stm_hw_events.stm_hwevents
@@ -164,8 +168,8 @@
 			memory_mem_dm                         => CONNECTED_TO_memory_mem_dm,                         --                          .mem_dm
 			memory_oct_rzqin                      => CONNECTED_TO_memory_oct_rzqin,                      --                          .oct_rzqin
 			reset_reset_n                         => CONNECTED_TO_reset_reset_n,                         --                     reset.reset_n
-			data_in_export                        => CONNECTED_TO_data_in_export,                        --                   data_in.export
 			signals_export                        => CONNECTED_TO_signals_export,                        --                   signals.export
-			data_out_export                       => CONNECTED_TO_data_out_export                        --                  data_out.export
+			vga_ctrl_export                       => CONNECTED_TO_vga_ctrl_export,                       --                  vga_ctrl.export
+			vga_done_export                       => CONNECTED_TO_vga_done_export                        --                  vga_done.export
 		);
 

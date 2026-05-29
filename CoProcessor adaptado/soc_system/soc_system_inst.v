@@ -1,5 +1,7 @@
 	soc_system u0 (
 		.clk_clk                               (<connected-to-clk_clk>),                               //                       clk.clk
+		.data_in_export                        (<connected-to-data_in_export>),                        //                   data_in.export
+		.data_out_export                       (<connected-to-data_out_export>),                       //                  data_out.export
 		.hps_0_f2h_cold_reset_req_reset_n      (<connected-to-hps_0_f2h_cold_reset_req_reset_n>),      //  hps_0_f2h_cold_reset_req.reset_n
 		.hps_0_f2h_debug_reset_req_reset_n     (<connected-to-hps_0_f2h_debug_reset_req_reset_n>),     // hps_0_f2h_debug_reset_req.reset_n
 		.hps_0_f2h_stm_hw_events_stm_hwevents  (<connected-to-hps_0_f2h_stm_hw_events_stm_hwevents>),  //   hps_0_f2h_stm_hw_events.stm_hwevents
@@ -77,8 +79,8 @@
 		.memory_mem_dm                         (<connected-to-memory_mem_dm>),                         //                          .mem_dm
 		.memory_oct_rzqin                      (<connected-to-memory_oct_rzqin>),                      //                          .oct_rzqin
 		.reset_reset_n                         (<connected-to-reset_reset_n>),                         //                     reset.reset_n
-		.data_in_export                        (<connected-to-data_in_export>),                        //                   data_in.export
 		.signals_export                        (<connected-to-signals_export>),                        //                   signals.export
-		.data_out_export                       (<connected-to-data_out_export>)                        //                  data_out.export
+		.vga_ctrl_export                       (<connected-to-vga_ctrl_export>),                       //                  vga_ctrl.export
+		.vga_done_export                       (<connected-to-vga_done_export>)                        //                  vga_done.export
 	);
 

@@ -227,6 +227,9 @@ wire [27:0] stm_hw_events;
 wire [31:0] elm_data_in;
 wire [2:0]  elm_signals;
 wire [31:0] elm_data_out;
+// VGA
+wire [31:0] vga_ctrl;
+wire        vga_done;
 
 // connection of internal logics
 assign stm_hw_events    = {{3{1'b0}},SW, fpga_led_internal, fpga_debounced_buttons};
@@ -234,6 +237,8 @@ assign stm_hw_events    = {{3{1'b0}},SW, fpga_led_internal, fpga_debounced_butto
 
 
 soc_system u0 (
+		.vga_ctrl_export (vga_ctrl),
+		.vga_done_export (vga_done),
 		.data_in_export  (elm_data_in),
 		.data_out_export (elm_data_out),
 		.signals_export  (elm_signals),
@@ -372,6 +377,55 @@ CoProcessor u_elm(
     .enable        (elm_signals[0]),
     .data_in       (elm_data_in),
     .data_out      (elm_data_out)
+);
+
+wire [8:0] vga_posx;
+wire [7:0] vga_posy;
+wire [2:0] vga_red_in;
+wire [2:0] vga_green_in;
+wire [2:0] vga_blue_in;
+wire       vga_enable;
+wire       vga_done_sig;
+
+assign vga_posx     = vga_ctrl[8:0];
+assign vga_posy     = vga_ctrl[17:9];
+assign vga_red_in   = vga_ctrl[20:18];
+assign vga_green_in = vga_ctrl[23:21];
+assign vga_blue_in  = vga_ctrl[26:24];
+assign vga_enable   = vga_ctrl[27];
+
+assign vga_done = vga_done_sig;
+
+wire [7:0] vga_r, vga_g, vga_b;
+wire vga_hs, vga_vs, vga_sync, vga_blank, vga_clk_sig;
+
+assign VGA_R      = vga_r;
+assign VGA_G      = vga_g;
+assign VGA_B      = vga_b;
+assign VGA_HS     = vga_hs;
+assign VGA_VS     = vga_vs;
+assign VGA_SYNC_N = vga_sync;
+assign VGA_BLANK_N= vga_blank;
+assign VGA_CLK    = vga_clk_sig;
+
+controller_vga_to_sd vga_inst(
+    .posx    (vga_posx),
+    .posy    (vga_posy),
+    .enable  (vga_enable),
+    .red     (vga_red_in),
+    .green   (vga_green_in),
+    .blue    (vga_blue_in),
+    .clk     (CLOCK_50),
+    .rst     (elm_signals[2]),
+    .hs      (vga_hs),
+    .vs      (vga_vs),
+    .sync    (vga_sync),
+    .blank   (vga_blank),
+    .vga_clk (vga_clk_sig),
+    .vga_red (vga_r),
+    .vga_green(vga_g),
+    .vga_blue(vga_b),
+    .done    (vga_done_sig)
 );
 
 reg [31:0] r;

@@ -84,7 +84,9 @@ module soc_system (
 		output wire [3:0]  memory_mem_dm,                         //                          .mem_dm
 		input  wire        memory_oct_rzqin,                      //                          .oct_rzqin
 		input  wire        reset_reset_n,                         //                     reset.reset_n
-		output wire [2:0]  signals_export                         //                   signals.export
+		output wire [2:0]  signals_export,                        //                   signals.export
+		output wire [31:0] vga_ctrl_export,                       //                  vga_ctrl.export
+		input  wire        vga_done_export                        //                  vga_done.export
 	);
 
 	wire   [1:0] hps_0_h2f_axi_master_awburst;                              // hps_0:h2f_AWBURST -> mm_interconnect_0:hps_0_h2f_axi_master_awburst
@@ -198,6 +200,13 @@ module soc_system (
 	wire   [1:0] mm_interconnect_0_data_in_s1_address;                      // mm_interconnect_0:data_in_s1_address -> data_in:address
 	wire         mm_interconnect_0_data_in_s1_write;                        // mm_interconnect_0:data_in_s1_write -> data_in:write_n
 	wire  [31:0] mm_interconnect_0_data_in_s1_writedata;                    // mm_interconnect_0:data_in_s1_writedata -> data_in:writedata
+	wire         mm_interconnect_0_vga_ctrl_s1_chipselect;                  // mm_interconnect_0:vga_ctrl_s1_chipselect -> vga_ctrl:chipselect
+	wire  [31:0] mm_interconnect_0_vga_ctrl_s1_readdata;                    // vga_ctrl:readdata -> mm_interconnect_0:vga_ctrl_s1_readdata
+	wire   [1:0] mm_interconnect_0_vga_ctrl_s1_address;                     // mm_interconnect_0:vga_ctrl_s1_address -> vga_ctrl:address
+	wire         mm_interconnect_0_vga_ctrl_s1_write;                       // mm_interconnect_0:vga_ctrl_s1_write -> vga_ctrl:write_n
+	wire  [31:0] mm_interconnect_0_vga_ctrl_s1_writedata;                   // mm_interconnect_0:vga_ctrl_s1_writedata -> vga_ctrl:writedata
+	wire  [31:0] mm_interconnect_0_vga_done_s1_readdata;                    // vga_done:readdata -> mm_interconnect_0:vga_done_s1_readdata
+	wire   [1:0] mm_interconnect_0_vga_done_s1_address;                     // mm_interconnect_0:vga_done_s1_address -> vga_done:address
 	wire  [31:0] hps_only_master_master_readdata;                           // mm_interconnect_1:hps_only_master_master_readdata -> hps_only_master:master_readdata
 	wire         hps_only_master_master_waitrequest;                        // mm_interconnect_1:hps_only_master_master_waitrequest -> hps_only_master:master_waitrequest
 	wire  [31:0] hps_only_master_master_address;                            // hps_only_master:master_address -> mm_interconnect_1:hps_only_master_master_address
@@ -248,7 +257,7 @@ module soc_system (
 	wire  [31:0] hps_0_f2h_irq1_irq;                                        // irq_mapper_001:sender_irq -> hps_0:f2h_irq_p1
 	wire  [31:0] intr_capturer_0_interrupt_receiver_irq;                    // irq_mapper_002:sender_irq -> intr_capturer_0:interrupt_in
 	wire         irq_mapper_receiver0_irq;                                  // jtag_uart:av_irq -> [irq_mapper:receiver0_irq, irq_mapper_002:receiver0_irq]
-	wire         rst_controller_reset_out_reset;                            // rst_controller:reset_out -> [data_in:reset_n, data_out:reset_n, intr_capturer_0:rst_n, irq_mapper_002:reset, jtag_uart:rst_n, mm_interconnect_0:fpga_only_master_clk_reset_reset_bridge_in_reset_reset, mm_interconnect_0:onchip_memory2_0_reset1_reset_bridge_in_reset_reset, mm_interconnect_1:hps_only_master_clk_reset_reset_bridge_in_reset_reset, mm_interconnect_1:hps_only_master_master_translator_reset_reset_bridge_in_reset_reset, onchip_memory2_0:reset, rst_translator:in_reset, signals:reset_n, sysid_qsys:reset_n]
+	wire         rst_controller_reset_out_reset;                            // rst_controller:reset_out -> [data_in:reset_n, data_out:reset_n, intr_capturer_0:rst_n, irq_mapper_002:reset, jtag_uart:rst_n, mm_interconnect_0:fpga_only_master_clk_reset_reset_bridge_in_reset_reset, mm_interconnect_0:onchip_memory2_0_reset1_reset_bridge_in_reset_reset, mm_interconnect_1:hps_only_master_clk_reset_reset_bridge_in_reset_reset, mm_interconnect_1:hps_only_master_master_translator_reset_reset_bridge_in_reset_reset, onchip_memory2_0:reset, rst_translator:in_reset, signals:reset_n, sysid_qsys:reset_n, vga_ctrl:reset_n, vga_done:reset_n]
 	wire         rst_controller_reset_out_reset_req;                        // rst_controller:reset_req -> [onchip_memory2_0:reset_req, rst_translator:reset_req_in]
 	wire         rst_controller_001_reset_out_reset;                        // rst_controller_001:reset_out -> [mm_interconnect_0:hps_0_h2f_axi_master_agent_clk_reset_reset_bridge_in_reset_reset, mm_interconnect_1:hps_0_f2h_axi_slave_agent_reset_sink_reset_bridge_in_reset_reset]
 
@@ -576,6 +585,25 @@ module soc_system (
 		.address  (mm_interconnect_0_sysid_qsys_control_slave_address)   //              .address
 	);
 
+	soc_system_data_in vga_ctrl (
+		.clk        (clk_clk),                                  //                 clk.clk
+		.reset_n    (~rst_controller_reset_out_reset),          //               reset.reset_n
+		.address    (mm_interconnect_0_vga_ctrl_s1_address),    //                  s1.address
+		.write_n    (~mm_interconnect_0_vga_ctrl_s1_write),     //                    .write_n
+		.writedata  (mm_interconnect_0_vga_ctrl_s1_writedata),  //                    .writedata
+		.chipselect (mm_interconnect_0_vga_ctrl_s1_chipselect), //                    .chipselect
+		.readdata   (mm_interconnect_0_vga_ctrl_s1_readdata),   //                    .readdata
+		.out_port   (vga_ctrl_export)                           // external_connection.export
+	);
+
+	soc_system_vga_done vga_done (
+		.clk      (clk_clk),                                //                 clk.clk
+		.reset_n  (~rst_controller_reset_out_reset),        //               reset.reset_n
+		.address  (mm_interconnect_0_vga_done_s1_address),  //                  s1.address
+		.readdata (mm_interconnect_0_vga_done_s1_readdata), //                    .readdata
+		.in_port  (vga_done_export)                         // external_connection.export
+	);
+
 	soc_system_mm_interconnect_0 mm_interconnect_0 (
 		.hps_0_h2f_axi_master_awid                                        (hps_0_h2f_axi_master_awid),                                 //                                       hps_0_h2f_axi_master.awid
 		.hps_0_h2f_axi_master_awaddr                                      (hps_0_h2f_axi_master_awaddr),                               //                                                           .awaddr
@@ -691,7 +719,14 @@ module soc_system (
 		.signals_s1_writedata                                             (mm_interconnect_0_signals_s1_writedata),                    //                                                           .writedata
 		.signals_s1_chipselect                                            (mm_interconnect_0_signals_s1_chipselect),                   //                                                           .chipselect
 		.sysid_qsys_control_slave_address                                 (mm_interconnect_0_sysid_qsys_control_slave_address),        //                                   sysid_qsys_control_slave.address
-		.sysid_qsys_control_slave_readdata                                (mm_interconnect_0_sysid_qsys_control_slave_readdata)        //                                                           .readdata
+		.sysid_qsys_control_slave_readdata                                (mm_interconnect_0_sysid_qsys_control_slave_readdata),       //                                                           .readdata
+		.vga_ctrl_s1_address                                              (mm_interconnect_0_vga_ctrl_s1_address),                     //                                                vga_ctrl_s1.address
+		.vga_ctrl_s1_write                                                (mm_interconnect_0_vga_ctrl_s1_write),                       //                                                           .write
+		.vga_ctrl_s1_readdata                                             (mm_interconnect_0_vga_ctrl_s1_readdata),                    //                                                           .readdata
+		.vga_ctrl_s1_writedata                                            (mm_interconnect_0_vga_ctrl_s1_writedata),                   //                                                           .writedata
+		.vga_ctrl_s1_chipselect                                           (mm_interconnect_0_vga_ctrl_s1_chipselect),                  //                                                           .chipselect
+		.vga_done_s1_address                                              (mm_interconnect_0_vga_done_s1_address),                     //                                                vga_done_s1.address
+		.vga_done_s1_readdata                                             (mm_interconnect_0_vga_done_s1_readdata)                     //                                                           .readdata
 	);
 
 	soc_system_mm_interconnect_1 mm_interconnect_1 (
