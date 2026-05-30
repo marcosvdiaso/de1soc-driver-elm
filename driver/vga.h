@@ -6,5 +6,6 @@
 void vga_draw(uint8_t *img);
 void vga_pixel(int x, int y, int color);
 int  vga_start(void);
+void vga_draw_mouse(uint8_t *img, signed int xa, signed int ya);
 
 #endif

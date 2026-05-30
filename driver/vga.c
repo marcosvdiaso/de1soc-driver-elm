@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include "driver.h"
+#include <stdio.h>
 
 #define MMAP_BASE 0xFF200000
 #define VGA_BASE 0x0030
@@ -52,6 +53,29 @@ void vga_draw(uint8_t *img)
           vga_pixel(xtotal, ytotal, c);
         }
       }
+    }
+  }
+}
+
+void vga_draw_mouse(uint8_t *img, signed int xa, signed int ya)
+{
+  for (int y =0;y<24;y++){
+    for (int x =0;x<24;x++){
+      uint8_t px = img[y * 24 + x];
+      int c = px >>5;
+
+      x += xa;
+      y += ya;
+
+      if (x > 179) x = 179;
+      if (y > 119) x = 119;
+      if (x < -179) x = -179;
+      if (y < -119) x = -119;
+
+
+      vga_pixel(x, y, c);
+
+      return;
     }
   }
 }
