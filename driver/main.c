@@ -5,6 +5,16 @@
 #include "mouse.h"
 #include <string.h>
 
+void enter() {
+    printf("Pressione enter para continuar\n");
+    fflush(stdout);
+    
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF) {
+        continue;
+    }
+}   
+
 int main(){
     uint8_t img[784];
     int op, e;
@@ -64,6 +74,8 @@ int main(){
             printf("A imagem foi inferida como: %d\n", r);
             printf("Era esperado: %d\n", e);
             r == e ? printf("Inferência correta\n") : printf("Inferência incorreta\n");
+
+            enter();
             vga_reset();
 
         } else if (op == 2) {
@@ -86,7 +98,10 @@ int main(){
             printf("A imagem foi inferida como: %d\n", r);
             printf("Era esperado: %d\n", e);
             r == e ? printf("Inferência correta\n") : printf("Inferência incorreta\n");
+
+            enter();
             vga_reset();
+
         } else if (op == 3) {
             continue;
         } else {
