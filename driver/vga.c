@@ -37,6 +37,15 @@ void vga_pixel(int x, int y, int color)
     *vga_ctrl = v & ~(1 << 27);
 }
 
+void vga_reset()
+{
+  for (int x = 0;x<320;x++){
+    for (int y = 0;y<240;y++){
+      vga_pixel(x, y, 0);
+    }
+  }
+}
+
 void vga_draw(uint8_t *img)
 {
   for (int y =0;y<28;y++){
@@ -57,25 +66,30 @@ void vga_draw(uint8_t *img)
   }
 }
 
-void vga_draw_mouse(uint8_t *img, signed int xa, signed int ya)
+void vga_drawing(uint8_t *img)
 {
-  for (int y =0;y<24;y++){
-    for (int x =0;x<24;x++){
-      uint8_t px = img[y * 24 + x];
-      int c = px >>5;
+  for (int y =0;y<28;y++){
+    for (int x =0;x<28;x++){
+      uint8_t px = img[y * 28 + x];
 
-      x += xa;
-      y += ya;
+      for(int yy = 0; yy <8; yy++){
+        for(int xx = 0; xx <8; xx++){
+          int xtotal = 48 + x*8 + xx;
+          int ytotal = 8+y*8+yy;
 
-      if (x > 179) x = 179;
-      if (y > 119) x = 119;
-      if (x < -179) x = -179;
-      if (y < -119) x = -119;
-
-
-      vga_pixel(x, y, c);
-
-      return;
+          vga_pixel(xtotal, ytotal, px);
+        }
+      }
     }
   }
+}
+
+void vga_draw_mouse(signed int xa, signed int ya, signed int oldx, signed int oldy)
+{
+    for (int y = 0; y < 24; y++) {
+        for (int x = 0; x < 24; x++) {
+            vga_pixel(oldx + x, oldy + y, 0);
+            vga_pixel(xa + x, ya + y, 255);
+        }
+    }
 }
