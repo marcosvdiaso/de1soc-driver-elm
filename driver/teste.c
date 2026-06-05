@@ -7,6 +7,11 @@
 int main(){
     int e, r;
     uint8_t img[784];
+    uint8_t draw[784];
+
+    for (int i = 0; i < 784; i++){
+        draw[i] = 0;
+    }
 
     printf("digito predito esperado: ");
     scanf("%d", &e);
@@ -25,7 +30,9 @@ int main(){
     }
 
     vga_start();
-    init_mouse();
+    vga_reset();
+    vga_drawing(draw);
+    init_mouse(draw);
 
     FILE *f = fopen("archives/images/image.bin", "rb");
     if (f) {
