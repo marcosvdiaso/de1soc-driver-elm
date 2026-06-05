@@ -1,3 +1,7 @@
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 199309L
+#endif
+
 #include "driver.h"
 #include "vga.h"
 #include <stdio.h>
@@ -5,6 +9,8 @@
 #include "mouse.h"
 #include <string.h>
 #include <dirent.h>
+#include <time.h>
+#include <math.h>
 
 void enter() {
     printf("Pressione enter para continuar\n");
@@ -20,8 +26,12 @@ int main(){
     uint8_t img[784];
     char path[1024] = "";
     int op, e, r;
-    int eimg = 0;
+    int eimg = 0, einf = 0;
     int ok = 0, wrng = 0;
+    struct timespec t1_lat, t2_lat;
+    double lat = 0;
+    double s, thr, diff, jitter;
+    double var = 0;
 
     if (elm_open() < 0) {
         printf("Erro ao abrir /dev/mem\n");
@@ -113,6 +123,15 @@ int main(){
                 continue;
             }
 
+            int total = 0, i=0;
+            while ((entry = readdir(dir)) != NULL) {
+                if (entry->d_name[0] == '.') continue;
+                total++;
+            }
+            rewinddir(dir);
+
+            double lats[total];
+
             while ((entry = readdir(dir)) != NULL) {
                 strcpy(path, "test/");
                 strcat(path, entry->d_name);
@@ -137,23 +156,45 @@ int main(){
                     continue;
                 }
 
+                clock_gettime(CLOCK_MONOTONIC, &t1_lat);
                 if (elm_start(img) < 0) {
                     printf("Erro na inferência\n");
-                    elm_close();
-                    return -1;
+                    einf++;
+                    continue;
                 }
+                clock_gettime(CLOCK_MONOTONIC, &t2_lat);
+                lats[i] = (t2_lat.tv_sec - t1_lat.tv_sec) * 1e9 + (t2_lat.tv_nsec - t1_lat.tv_nsec);
+                lat += lats[i];
+                i++;
 
                 r = elm_result();
                 (r == e) ? ok++ : wrng++;
+                printf("Imagem \"%s\" foi inferida como: %d e era esperado: %d\n", entry->d_name, r, e);
             }
 
+            s = lat / 1e9;
+            thr = (total - (einf+eimg)) / s;
+            lat /= (total - (einf+eimg));
+            
+            for (int i =0; i < (total - (einf+eimg)); i++){
+                diff = lats[i] - lat;
+                var += diff * diff;
+                }
+            jitter = sqrt(var/(total - (einf+eimg)));
+
+            printf("\n");
             printf("------------------------------------------\n");
             printf("MÉTRICAS BENCHMARK\n");
             printf("------------------------------------------\n");
-            printf("Total de imagens: %d\n", ok + wrng + eimg);
+            printf("Total de imagens: %d\n", total);
             printf("Imagens inferidas corretamente: %d\n", ok);
             printf("Imagens inferidas incorretamente: %d\n", wrng);
             printf("Erros ao carregar imagem: %d\n", eimg);
+            printf("Erros ao iniciar inferência: %d\n", einf);
+            printf("Acurácia: %.2f%% (%d imagens de %d inferidas)\n", (float)ok / (total - einf) * 100, ok, total - einf);
+            printf("Latência: %.0f ns\n", lat);
+            printf("Throughput: %.2f inferencias/s\n", thr);
+            printf("Desvio padrão: %.0f ns\n", jitter);
 
             closedir(dir);
         } else {
