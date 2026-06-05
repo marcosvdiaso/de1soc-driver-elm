@@ -51,10 +51,7 @@ void draw(uint8_t *img)
             if (mouse_y > 224) mouse_y = 224;
 
             vga_draw_mouse(mouse_x, mouse_y, oldx, oldy);
-
-            } else if (mouse.type == EV_SYN && mouse.code == SYN_REPORT) {
-                printf("posição %dx %dy", mouse_x, mouse_y);
-            }
+        }
 
         if (mouse.type == EV_KEY && (mouse.code == BTN_LEFT)) {
             dprs = mouse.value;
