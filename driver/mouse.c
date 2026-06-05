@@ -11,7 +11,7 @@
 // https://docs.huihoo.com/doxygen/linux/kernel/3.7/structinput__event.html
 // cat /proc/bus/input/devices
 
-void init_mouse(uint8_t *img)
+void draw(uint8_t *img)
 {
     const char *path = "/dev/input/event0";
     int fd = open(path, O_RDONLY);
@@ -70,12 +70,12 @@ void init_mouse(uint8_t *img)
             if (px < 27) img[py * 28 + (px + 1)] = 120;
             if (py > 0) img[(py - 1) * 28 + px] = 120;
             if (py < 27) img[(py + 1) * 28 + px] = 120;
-            vga_drawing(img);
+            vga_draw(img);
         } else if (mouse.type == EV_SYN && eprs) {
-                int px = (mouse_x - 48) / 8;
-                int py = (mouse_y - 8) / 8;
-                img[py * 28 + px] = 0;
-                vga_drawing(img);
+            int px = (mouse_x - 48) / 8;
+            int py = (mouse_y - 8) / 8;
+            img[py * 28 + px] = 0;
+            vga_draw(img);
         }
 
     }
