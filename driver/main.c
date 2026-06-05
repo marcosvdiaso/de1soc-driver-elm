@@ -19,8 +19,9 @@ void enter() {
 int main(){
     uint8_t img[784];
     char path[1024] = "";
-    int op, e;
+    int op, e, r;
     int eimg = 0;
+    int ok = 0, wrng = 0;
 
     if (elm_open() < 0) {
         printf("Erro ao abrir /dev/mem\n");
@@ -72,7 +73,7 @@ int main(){
                 return -1;
             }
 
-            int r = elm_result();
+            r = elm_result();
             printf("A imagem foi inferida como: %d\n", r);
             printf("Era esperado: %d\n", e);
             r == e ? printf("Inferência correta\n") : printf("Inferência incorreta\n");
@@ -96,7 +97,7 @@ int main(){
                 return -1;
             }
 
-            int r = elm_result();
+            r = elm_result();
             printf("A imagem foi inferida como: %d\n", r);
             printf("Era esperado: %d\n", e);
             r == e ? printf("Inferência correta\n") : printf("Inferência incorreta\n");
@@ -116,6 +117,8 @@ int main(){
                 strcpy(path, "test/");
                 strcat(path, entry->d_name);
                 if (entry->d_name[0] == '.') continue;
+
+                e = entry->d_name[0] - '0';
 
                 FILE *f = fopen(path, "rb");
                 if (f) {
@@ -139,7 +142,18 @@ int main(){
                     elm_close();
                     return -1;
                 }
+
+                r = elm_result();
+                (r == e) ? ok++ : wrng++;
             }
+
+            printf("------------------------------------------\n");
+            printf("MÉTRICAS BENCHMARK\n");
+            printf("------------------------------------------\n");
+            printf("Total de imagens: %d\n", ok + wrng + eimg);
+            printf("Imagens inferidas corretamente: %d\n", ok);
+            printf("Imagens inferidas incorretamente: %d\n", wrng);
+            printf("Erros ao carregar imagem: %d\n", eimg);
 
             closedir(dir);
         } else {
