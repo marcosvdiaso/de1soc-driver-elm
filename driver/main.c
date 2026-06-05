@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "mouse.h"
 #include <string.h>
+#include <dirent.h>
 
 void enter() {
     printf("Pressione enter para continuar\n");
@@ -17,7 +18,9 @@ void enter() {
 
 int main(){
     uint8_t img[784];
+    char path[1024] = "";
     int op, e;
+    int eimg = 0;
 
     if (elm_open() < 0) {
         printf("Erro ao abrir /dev/mem\n");
@@ -43,7 +46,6 @@ int main(){
         scanf("%d", &op);
 
         if (op == 1) {
-            char path[1024] = "";
             getchar();
             fgets(path, 1024, stdin);
             path[strcspn(path, "\n")] = 0;
@@ -103,7 +105,43 @@ int main(){
             vga_reset();
 
         } else if (op == 3) {
-            continue;
+            DIR *dir = opendir("test");
+            struct dirent *entry;
+            if (dir == NULL) {
+                printf("Erro abrindo pasta\n");
+                continue;
+            }
+
+            while ((entry = readdir(dir)) != NULL) {
+                strcpy(path, "test/");
+                strcat(path, entry->d_name);
+                if (entry->d_name[0] == '.') continue;
+
+                FILE *f = fopen(path, "rb");
+                if (f) {
+                    if (fread(img, 1, 784, f) == 784) {
+                        vga_draw(img);
+                        printf("Imagem exibida\n");
+                    } else {
+                        printf("Erro no fread\n");
+                        eimg++;
+                        continue;
+                    }
+                    fclose(f);
+                } else {
+                    printf("Erro ao abrir imagem\n");
+                    eimg++;
+                    continue;
+                }
+
+                if (elm_start(img) < 0) {
+                    printf("Erro na inferência\n");
+                    elm_close();
+                    return -1;
+                }
+            }
+
+            closedir(dir);
         } else {
             printf("Opção inválida\n");
         }
