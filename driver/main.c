@@ -57,6 +57,10 @@ int main(int argc, char *argv[]){ // duvida: o que seriam os parametros aqui...?
         scanf("%d", &op);
 
         if (op == 1) {
+            if (argc < 2) {
+                printf("Não passou path no CLI\n", argv[0]);
+                continue;
+            }
             strcpy(path, argv[1]);
 
             FILE *f = fopen(path, "rb");
