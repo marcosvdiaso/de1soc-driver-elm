@@ -22,7 +22,7 @@ void enter() {
     }
 }   
 
-int main(){
+int main(int argc, char *argv[]){ // duvida: o que seriam os parametros aqui...? tipo, tem o path, mas e os "parametros", opmode?
     uint8_t img[784];
     char path[1024] = "";
     int op, e, r;
@@ -57,9 +57,7 @@ int main(){
         scanf("%d", &op);
 
         if (op == 1) {
-            getchar();
-            fgets(path, 1024, stdin);
-            path[strcspn(path, "\n")] = 0;
+            strcpy(path, argv[1]);
 
             FILE *f = fopen(path, "rb");
             if (f) {
