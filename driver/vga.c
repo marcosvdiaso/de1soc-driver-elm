@@ -70,8 +70,8 @@ void vga_draw(uint8_t *img)
 /*desenhar cursor*/
 void vga_draw_mouse(signed int xa, signed int ya, signed int oldx, signed int oldy)
 {
-    for (int y = 0; y < 24; y++) {
-        for (int x = 0; x < 24; x++) {
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) {
             vga_pixel(oldx + x, oldy + y, 0);
             vga_pixel(xa + x, ya + y, 255);
         }
