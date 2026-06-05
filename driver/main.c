@@ -20,9 +20,33 @@ void enter() {
     while ((c = getchar()) != '\n' && c != EOF) {
         continue;
     }
-}   
+}
+
+void arch_csv(int total, int ok, int wrng, int eimg, int einf, double lat, double thr, double jitter) {
+    // https://www.ibm.com/docs/pt-br/i/7.5.0?topic=functions-fprintf-write-formatted-data-stream
+    FILE *stream;
+    char name[1024];
+
+    printf("Digite o nome do arquivo csv: ");
+    fgets(name, sizeof(name), stdin);
+    name[strcspn(name, "\n")] = 0;
+    strcat(name, ".csv");
+ 
+    stream = fopen(name, "w");
+    fprintf(stream, "Total de imagens,Imagens inferidas corretamente,Imagens inferidas incorretamente,Erros ao carregar imagem,Erros ao iniciar inferência,Acurácia,Latência (ns),Throughput (inferencias/s),Desvio padrão (ns)\n");
+    fprintf(stream, "%d,%d,%d,%d,%d,%.2f%%,%.0f,%.2f,%.0f\n", total, ok, wrng, eimg, einf, (float)ok / (total - einf) * 100, lat, thr, jitter);
+
+    fclose (stream);
+}
 
 int main(int argc, char *argv[]){ // duvida: o que seriam os parametros aqui...? tipo, tem o path, mas e os "parametros", opmode?
+    /*
+    ideias:
+    1. opmode + path (ou imagem ou de arquivos de teste, ou nada se for draw), mas ai perco a reusabilidade com menu
+    2. path img + path teste, ai fica os 3 modos usaveis, mas tem que passar os 2 paths
+    3. so path de imagem, ai o benchmark fica hardcoded mesmo do test
+    */
+    
     uint8_t img[784];
     char path[1024] = "";
     int op, e, r;
@@ -179,6 +203,13 @@ int main(int argc, char *argv[]){ // duvida: o que seriam os parametros aqui...?
                 printf("Imagem \"%s\" foi inferida como: %d e era esperado: %d\n", entry->d_name, r, e);
             }
 
+            /*
+            duvida: faz sentido eu calcular latencia, throughput e jitter desconsiderando os erros de inferência 
+            e de leitura de imagem? tipo, se a imagem não for lida ou a inferência não for feita, 
+            não tem como eu calcular a latencia dela mesmo, entao faz sentido eu excluir esses casos do 
+            calculo, mas tenho duvidas sobre
+            */
+
             s = lat / 1e9;
             thr = (total - (einf+eimg)) / s;
             lat /= (total - (einf+eimg));
@@ -202,6 +233,8 @@ int main(int argc, char *argv[]){ // duvida: o que seriam os parametros aqui...?
             printf("Latência: %.0f ns\n", lat);
             printf("Throughput: %.2f inferencias/s\n", thr);
             printf("Desvio padrão: %.0f ns\n", jitter);
+
+            arch_csv(total, ok, wrng, eimg, einf, lat, thr, jitter);
 
             closedir(dir);
         } else {
