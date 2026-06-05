@@ -46,9 +46,9 @@ void draw(uint8_t *img)
             }
 
             if (mouse_x < 48) mouse_x = 48;
-            if (mouse_x > 271) mouse_x = 271;
+            if (mouse_x > 264) mouse_x = 264;
             if (mouse_y < 8) mouse_y = 8;
-            if (mouse_y > 231) mouse_y = 231;
+            if (mouse_y > 224) mouse_y = 224;
 
             vga_draw_mouse(mouse_x, mouse_y, oldx, oldy);
 
