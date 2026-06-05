@@ -11,40 +11,24 @@
 // https://docs.huihoo.com/doxygen/linux/kernel/3.7/structinput__event.html
 // cat /proc/bus/input/devices
 
-#define X_AXIS 480
-#define Y_AXIS 320
-#define PATH "img/cursor.bin"
-
-void init_mouse()
+void init_mouse(uint8_t *img)
 {
     const char *path = "/dev/input/event0";
     int fd = open(path, O_RDONLY);
     
     if (fd == -1) {
         perror("erro");
-        return 1;
+        return;
     }
 
     struct input_event mouse;
     signed int mouse_x = 0;
     signed int mouse_y = 0;
+    signed int oldx;
+    signed int oldy;
+    int dprs = 0, eprs = 0;
 
-    uint8_t img[576];
-    FILE *f = fopen(PATH, "rb");
-    if (f) {
-        if (fread(img, 1, 576, f) == 576) {
-            vga_draw(img);
-            printf("cursor foi\n");
-        } else {
-            printf("erro acessar bytes imagemcursor\n");
-        }
-        fclose(f);
-    } else {
-        printf("error abrir imagenscursor\n");
-    }
-
-
-    while (1) {
+    while (!(mouse.type == EV_KEY && mouse.code == BTN_MIDDLE && mouse.value == 1)) {
         ssize_t bytes = read(fd, &mouse, sizeof(mouse));
         if (bytes < (ssize_t)sizeof(mouse)) {
             perror("erro");
@@ -52,17 +36,48 @@ void init_mouse()
         }
 
         if (mouse.type == EV_REL) {
+            oldx = mouse_x;
+            oldy = mouse_y;
+
             if (mouse.code == REL_X) {
                 mouse_x += mouse.value;
-                vga_draw_mouse(img, mouse_x, mouse_y);
             } else if (mouse.code == REL_Y) {
                 mouse_y += mouse.value;
-                vga_draw_mouse(img, mouse_x, mouse_y);
             }
-        } else if (mouse.type == EV_SYN && mouse.code == SYN_REPORT) {
-            printf("posição %dx %dy", mouse_x, mouse_y);
-        }
-    }
 
+            if (mouse_x < 48) mouse_x = 48;
+            if (mouse_x > 271) mouse_x = 271;
+            if (mouse_y < 8) mouse_y = 8;
+            if (mouse_y > 231) mouse_y = 231;
+
+            vga_draw_mouse(mouse_x, mouse_y, oldx, oldy);
+
+            } else if (mouse.type == EV_SYN && mouse.code == SYN_REPORT) {
+                printf("posição %dx %dy", mouse_x, mouse_y);
+            }
+
+        if (mouse.type == EV_KEY && (mouse.code == BTN_LEFT)) {
+            dprs = mouse.value;
+        } else  if (mouse.type == EV_KEY && (mouse.code == BTN_RIGHT)) {
+            eprs = mouse.value;
+        }
+
+        if (mouse.type == EV_SYN && dprs) {   
+            int px = (mouse_x - 48) / 8;
+            int py = (mouse_y - 8) / 8;
+            img[py * 28 + px] = 255;
+            if (px > 0) img[py * 28 + (px - 1)] = 120;
+            if (px < 27) img[py * 28 + (px + 1)] = 120;
+            if (py > 0) img[(py - 1) * 28 + px] = 120;
+            if (py < 27) img[(py + 1) * 28 + px] = 120;
+            vga_drawing(img);
+        } else if (mouse.type == EV_SYN && eprs) {
+                int px = (mouse_x - 48) / 8;
+                int py = (mouse_y - 8) / 8;
+                img[py * 28 + px] = 0;
+                vga_drawing(img);
+        }
+
+    }
     close(fd);
 }
