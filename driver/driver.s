@@ -32,6 +32,8 @@ TEMPO DE PULSO PARA SIGNALS:
 	* 800MHz (HPS)
 	* /= 16, mas vou assumir 32 para margem de segurança
 	* https://www.manualslib.com/manual/1485906/Terasic-De1-Soc.html
+
+image: .incbin "archives/images/image.bin"
 -------------------------------------------------------------------------------
 */
 
@@ -66,7 +68,6 @@ fd_val: .skip 4
 W_in: .incbin "archives/W_in.bin"
 bbin:    .incbin "archives/b.bin"
 beta: .incbin "archives/beta.bin"
-image: .incbin "archives/images/image.bin"
 
 .section .text
 
@@ -392,7 +393,6 @@ elm_start:
 elm_start:
     push {r4, r5, r7, lr}
 
-    ldr  r0, =image
     bl   elm_store_img
     cmp  r0, #0
     blt  .elm_load_err
