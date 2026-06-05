@@ -116,6 +116,11 @@ int main(){
             vga_reset();
 
         } else if (op == 3) {
+            eimg = 0, einf = 0;
+            ok = 0, wrng = 0;
+            lat = 0;
+            var = 0;
+
             DIR *dir = opendir("test");
             struct dirent *entry;
             if (dir == NULL) {
