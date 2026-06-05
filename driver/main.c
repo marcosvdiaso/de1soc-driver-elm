@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "mouse.h"
+#include <string.h>
 
 int main(){
     uint8_t img[784];
@@ -30,7 +31,9 @@ int main(){
 
         if (op == 1) {
             char path[1024] = "";
+            getchar();
             fgets(path, 1024, stdin);
+            path[strcspn(path, "\n")] = 0;
             FILE *f = fopen(path, "rb");
             if (f) {
                 if (fread(img, 1, 784, f) == 784) {
@@ -43,32 +46,34 @@ int main(){
             } else {
                 printf("Erro ao abrir imagem\n");
             }
-            if (elm_start() < 0) {
+            if (elm_start(img) < 0) {
                 printf("Erro na inferência\n");
                 elm_close();
                 return -1;
             }
             int r = elm_result();
             printf("A imagem foi inferida como: %d\n", r);
+            vga_reset();
 
         } else if (op == 2) {
             for (int i = 0; i < 784; i++){
                 img[i] = 0;
             }
             draw(img);
-            if (elm_start() < 0) {
+            if (elm_start(img) < 0) {
                 printf("Erro na inferência\n");
                 elm_close();
                 return -1;
             }
             int r = elm_result();
             printf("A imagem foi inferida como: %d\n", r);
+            vga_reset();
         } else if (op == 3) {
             continue;
         } else {
             printf("Opção inválida\n");
         }
-    } while (op < 1 || op > 3);
+    } while (op != 4);
 
     elm_close();
     return 0;
