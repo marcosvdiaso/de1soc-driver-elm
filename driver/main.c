@@ -1,77 +1,74 @@
-#ifndef _POSIX_C_SOUCE
-#define _POSIX_C_SOURCE 199309L
-#endif
-
 #include "driver.h"
-#include <stdio.h>
-#include <time.h>
-#include <math.h>
 #include "vga.h"
+#include <stdio.h>
+#include <stdint.h>
+#include "mouse.h"
 
-// https://man7.org/linux/man-pages/man3/clock_gettime.3.html
-
-int main(void) {
-    int result, digit, test;
-    int ok = 0;
-    float rob;
-    struct timespec t1_lat, t2_lat;
-    double lat = 0;
-    double s, thr, diff, jitter;
-    double var = 0;
-
-    printf("Digito predito esperado: ");
-    scanf("%d", &digit);
-
-    printf("Quantas vezes deseja rodar o teste? ");
-    scanf("%d", &test);
-
-    double lats[test];
-
-    if (elm_open() < 0) {
+int main(){
+    uint8_t img[784];
+    int op;
+      if (elm_open() < 0) {
         printf("Erro ao abrir /dev/mem\n");
         return -1;
     }
-
     elm_reset();
-
-    if (elm_load() < 0){
-      printf("Erro ao carregar arquivos.\n");
-      return -1;
+    if (elm_load() < 0) {
+        printf("Erro ao carregar métricas\n");
+        elm_close();
+        return -1;
     }
+    vga_start();
+    vga_reset();
 
-    for (int i = 0; i < test; i++){
-      clock_gettime(CLOCK_MONOTONIC, &t1_lat);
-      if (elm_start() < 0) {
-        printf("Erro na inferencia nº %d\n", i+1);
-        continue;
-      }
-      clock_gettime(CLOCK_MONOTONIC, &t2_lat);
-      lats[i] = (t2_lat.tv_sec - t1_lat.tv_sec) * 1e9 + (t2_lat.tv_nsec - t1_lat.tv_nsec);
-      lat += lats[i];
-      result = elm_result();
-      if (result == digit) ok++;
-      printf("Digito predito na inferência de nº %d = %d\n", i+1, result);
-    }
+    do {
+        printf("Digite o número correspondente menu: \n");
+        printf("1. Inferência enviando imagem\n");
+        printf("2. Inferência desenhando a imagem\n");
+        printf("3. Benchmark\n");
+        printf("4. Sair\n");
+        scanf("%d", &op);
 
-    
-    rob = (ok *100.0f)/ test;
-    s = lat / 1e9;
-    thr = test / s;
-    lat /= test;
-    
-    for (int i =0; i < test; i++){
-      diff = lats[i] - lat;
-      var += diff * diff;
-    }
-    jitter = sqrt(var/test);
+        if (op == 1) {
+            char path[1024] = "";
+            fgets(path, 1024, stdin);
+            FILE *f = fopen(path, "rb");
+            if (f) {
+                if (fread(img, 1, 784, f) == 784) {
+                    vga_draw(img);
+                    printf("Imagem exibida\n");
+                } else {
+                    printf("Erro no fread\n");
+                }
+                fclose(f);
+            } else {
+                printf("Erro ao abrir imagem\n");
+            }
+            if (elm_start() < 0) {
+                printf("Erro na inferência\n");
+                elm_close();
+                return -1;
+            }
+            int r = elm_result();
+            printf("A imagem foi inferida como: %d\n", r);
 
-    printf("------------------------------------------\n");
-    printf("MÉTRICAS DOS TESTES:\n");
-    printf("------------------------------------------\n");
-    printf("Robustez: %.1f%%\n", rob);
-    printf("Latência: %.0f ns\n", lat);
-    printf("Throughput: %.2f inferencias/s\n", thr);
-    printf("Desvio padrão: %.0f ns\n", jitter);
+        } else if (op == 2) {
+            for (int i = 0; i < 784; i++){
+                img[i] = 0;
+            }
+            draw(img);
+            if (elm_start() < 0) {
+                printf("Erro na inferência\n");
+                elm_close();
+                return -1;
+            }
+            int r = elm_result();
+            printf("A imagem foi inferida como: %d\n", r);
+        } else if (op == 3) {
+            continue;
+        } else {
+            printf("Opção inválida\n");
+        }
+    } while (op < 1 || op > 3);
 
     elm_close();
     return 0;
