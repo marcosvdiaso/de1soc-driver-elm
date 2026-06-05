@@ -4,8 +4,8 @@ LDLIBS  = -lm -lrt
 
 all: driver
 
-driver: main.c vga.c mouse.c driver.s
-	$(CC) $(CFLAGS) -o $@ main.c vga.c mouse.c driver.s $(LDLIBS)
+driver: main.c vga.c mouse.c csv.c driver.s
+	$(CC) $(CFLAGS) -o $@ main.c vga.c mouse.c csv.c driver.s $(LDLIBS)
 
 clean:
 	rm -f driver

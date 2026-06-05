@@ -11,6 +11,7 @@
 #include <dirent.h>
 #include <time.h>
 #include <math.h>
+#include "csv.h"
 
 void enter() {
     printf("Pressione enter para continuar\n");
@@ -20,18 +21,6 @@ void enter() {
     while ((c = getchar()) != '\n' && c != EOF) {
         continue;
     }
-}
-
-void smr_csv(FILE *stream, int total, int ok, int wrng, int eimg, int einf, double lat, double thr, double jitter) {
-    fprintf(stream, "\nMÉTRICAS BENCHMARK\n");
-    fprintf(stream, "Total de imagens,Imagens inferidas corretamente,Imagens inferidas incorretamente,Erros ao carregar imagem,Erros ao iniciar inferência,Acurácia,Latência (ns),Throughput (inferencias/s),Desvio padrão (ns)\n");
-    fprintf(stream, "%d,%d,%d,%d,%d,%.2f%%,%.0f,%.2f,%.0f\n", total, ok, wrng, eimg, einf, (float)ok / (total - einf) * 100, lat, thr, jitter);
-
-    fclose (stream);
-}
-
-void infs_csv(FILE *stream, char *name, int r, int e, double lat) {
-    fprintf(stream, "%s,%d,%d,%s,%.0f\n", name, r, e, (r == e) ? "Correta" : "Incorreta", lat);
 }
 
 int main(int argc, char *argv[]){ // duvida: o que seriam os parametros aqui...? tipo, tem o path, mas e os "parametros", opmode?
@@ -149,15 +138,7 @@ int main(int argc, char *argv[]){ // duvida: o que seriam os parametros aqui...?
                 continue;
             }
 
-            // https://www.ibm.com/docs/pt-br/i/7.5.0?topic=functions-fprintf-write-formatted-data-stream
-            FILE *stream;
-            char name[1024];
-            printf("Digite o nome que deseja salvar o arquivo csv: \n");
-            getchar();
-            fgets(name, sizeof(name), stdin);
-            name[strcspn(name, "\n")] = 0;
-            strcat(name, ".csv");
-            stream = fopen(name, "w");
+            FILE *stream = create_csv();
 
             int total = 0, i=0;
             while ((entry = readdir(dir)) != NULL) {
@@ -205,7 +186,7 @@ int main(int argc, char *argv[]){ // duvida: o que seriam os parametros aqui...?
                 r = elm_result();
                 (r == e) ? ok++ : wrng++;
                 printf("Imagem \"%s\" foi inferida como: %d e era esperado: %d\n", entry->d_name, r, e);
-                infs_csv(stream, entry->d_name, r, e, lats[i]);
+                infs_csv(stream, entry->d_name, r, e, lats[i], i);
                 i++;
             }
 
@@ -241,6 +222,7 @@ int main(int argc, char *argv[]){ // duvida: o que seriam os parametros aqui...?
             printf("Desvio padrão: %.0f ns\n", jitter);
 
             smr_csv(stream, total, ok, wrng, eimg, einf, lat, thr, jitter);
+            fclose (stream);
 
             closedir(dir);
         } else {
