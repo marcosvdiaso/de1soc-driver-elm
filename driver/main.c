@@ -7,17 +7,20 @@
 
 int main(){
     uint8_t img[784];
-    int op;
-      if (elm_open() < 0) {
+    int op, e;
+
+    if (elm_open() < 0) {
         printf("Erro ao abrir /dev/mem\n");
         return -1;
     }
     elm_reset();
+
     if (elm_load() < 0) {
         printf("Erro ao carregar métricas\n");
         elm_close();
         return -1;
     }
+
     vga_start();
     vga_reset();
 
@@ -34,6 +37,7 @@ int main(){
             getchar();
             fgets(path, 1024, stdin);
             path[strcspn(path, "\n")] = 0;
+
             FILE *f = fopen(path, "rb");
             if (f) {
                 if (fread(img, 1, 784, f) == 784) {
@@ -46,27 +50,42 @@ int main(){
             } else {
                 printf("Erro ao abrir imagem\n");
             }
+
+            printf("Digite o dígito esperado: ");
+            scanf("%d", &e);
+
             if (elm_start(img) < 0) {
                 printf("Erro na inferência\n");
                 elm_close();
                 return -1;
             }
+
             int r = elm_result();
             printf("A imagem foi inferida como: %d\n", r);
+            printf("Era esperado: %d\n", e);
+            r == e ? printf("Inferência correta\n") : printf("Inferência incorreta\n");
             vga_reset();
 
         } else if (op == 2) {
             for (int i = 0; i < 784; i++){
                 img[i] = 0;
             }
+
             draw(img);
+
+            printf("Digite o dígito esperado: ");
+            scanf("%d", &e);
+
             if (elm_start(img) < 0) {
                 printf("Erro na inferência\n");
                 elm_close();
                 return -1;
             }
+
             int r = elm_result();
             printf("A imagem foi inferida como: %d\n", r);
+            printf("Era esperado: %d\n", e);
+            r == e ? printf("Inferência correta\n") : printf("Inferência incorreta\n");
             vga_reset();
         } else if (op == 3) {
             continue;
