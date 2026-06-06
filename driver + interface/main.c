@@ -15,6 +15,9 @@
 #include <math.h>
 #include "csv.h"
 
+// TODO: separar modos em funcs (MODULARIZACAO)
+
+
 void enter() {
     printf("Pressione enter para continuar\n");
     fflush(stdout);
@@ -31,6 +34,8 @@ int main(int argc, char *argv[]){ // duvida: o que seriam os parametros aqui...?
     1. opmode + path (ou imagem ou de arquivos de teste, ou nada se for draw), mas ai perco a reusabilidade com menu
     2. path img + path teste, ai fica os 3 modos usaveis, mas tem que passar os 2 paths
     3. so path de imagem, ai o benchmark fica hardcoded mesmo do test
+
+    se for pegar path de teste tambem, vai ter que trocar como funciona pra pegar a var e
     */
     
     uint8_t img[784];
@@ -67,11 +72,15 @@ int main(int argc, char *argv[]){ // duvida: o que seriam os parametros aqui...?
         scanf("%d", &op);
 
         if (op == 1) {
-            if (argc < 2) {
-                printf("Não passou path no CLI\n", argv[0]);
-                continue;
+            if (argv[1] == NULL) {
+                printf("Path deve ser passado como primeiro argumento, exemplo: %s test/0_0.bin\n", argv[0]);
+                printf("Não passou path no CLI, digite o path abaixo: \n");
+                getchar();
+                fgets(path, 1024, stdin);
+                path[strcspn(path, "\n")] = 0;
+            } else {
+                strcpy(path, argv[1]);
             }
-            strcpy(path, argv[1]);
 
             FILE *f = fopen(path, "rb");
             if (f) {
@@ -157,7 +166,7 @@ int main(int argc, char *argv[]){ // duvida: o que seriam os parametros aqui...?
 
             double lats[total];
 
-            while ((entry = readdir(dir)) != NULL) {
+            while ((entry = readdir(dir)) != NULL) { // verificar funcionamento dessas metricas, talvez tenha que mudar algumas, como thr que nao ta pegando o processo todo
                 strcpy(path, "test/");
                 strcat(path, entry->d_name);
                 if (entry->d_name[0] == '.') continue;
