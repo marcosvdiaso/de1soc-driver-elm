@@ -1,3 +1,5 @@
+// duvida: tem problema usar o mesmo github do marco 2?
+
 #ifndef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE 199309L
 #endif
