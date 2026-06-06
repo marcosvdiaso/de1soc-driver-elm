@@ -13,6 +13,7 @@ void infs_csv(FILE *stream, char *name, int r, int e, double lat, int i) {
 
 FILE *create_csv(){
     // https://www.ibm.com/docs/pt-br/i/7.5.0?topic=functions-fprintf-write-formatted-data-stream
+    // https://stackoverflow.com/questions/14916527/writing-to-a-csv-file-in-c
     FILE *stream;
     char name[1024];
 

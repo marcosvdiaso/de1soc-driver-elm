@@ -133,6 +133,7 @@ int main(int argc, char *argv[]){ // duvida: o que seriam os parametros aqui...?
             lat = 0;
             var = 0;
 
+            // https://stackoverflow.com/questions/1271064/how-do-i-loop-through-all-files-in-a-folder-using-c
             DIR *dir = opendir("test");
             struct dirent *entry;
             if (dir == NULL) {
