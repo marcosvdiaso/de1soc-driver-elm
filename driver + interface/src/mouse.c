@@ -45,10 +45,10 @@ void draw(uint8_t *img)
                 mouse_y += mouse.value;
             }
 
-            if (mouse_x < 48) mouse_x = 48;
-            if (mouse_x > 264) mouse_x = 264;
-            if (mouse_y < 8) mouse_y = 8;
-            if (mouse_y > 224) mouse_y = 224;
+            if (mouse_x < 62) mouse_x = 62;
+            if (mouse_x > 258) mouse_x = 258;
+            if (mouse_y < 22) mouse_y = 22;
+            if (mouse_y > 218) mouse_y = 218;
 
             vga_draw_mouse(mouse_x, mouse_y, oldx, oldy);
         }
@@ -60,17 +60,17 @@ void draw(uint8_t *img)
         }
 
         if (mouse.type == EV_SYN && dprs) {   
-            int px = (mouse_x - 48) / 8;
-            int py = (mouse_y - 8) / 8;
+            int px = (mouse_x - 62) / 7;
+            int py = (mouse_y - 22) / 7;
             img[py * 28 + px] = 255;
             if (px > 0) img[py * 28 + (px - 1)] = 120;
-            if (px < 27) img[py * 28 + (px + 1)] = 120;
+            if (px < 28) img[py * 28 + (px + 1)] = 120;
             if (py > 0) img[(py - 1) * 28 + px] = 120;
-            if (py < 27) img[(py + 1) * 28 + px] = 120;
+            if (py < 28) img[(py + 1) * 28 + px] = 120;
             vga_draw(img);
         } else if (mouse.type == EV_SYN && eprs) {
-            int px = (mouse_x - 48) / 8;
-            int py = (mouse_y - 8) / 8;
+            int px = (mouse_x - 62) / 7;
+            int py = (mouse_y - 22) / 7;
             img[py * 28 + px] = 0;
             vga_draw(img);
         }
