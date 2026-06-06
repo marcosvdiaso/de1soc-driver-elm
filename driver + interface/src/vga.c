@@ -1,6 +1,9 @@
+// https://github.com/dhepper/font8x8/blob/master/font8x8_basic.h
+
 #include <stdint.h>
 #include "driver.h"
 #include <stdio.h>
+#include "font8x8_basic.h"
 
 #define MMAP_BASE 0xFF200000
 #define VGA_BASE 0x0030
@@ -22,15 +25,15 @@ int vga_start()
 }
 
 /*montar pixel*/
-void vga_pixel(int x, int y, int color)
+void vga_pixel(int x, int y, int r, int g, int b)
 {
     uint32_t v = 0;
 
     v |= (x & 0b111111111);
     v |= ((y & 0b11111111) << 9);
-    v |= ((color & 0b111) << 18);
-    v |= ((color & 0b111) << 21);
-    v |= ((color & 0b111) << 24);
+    v |= ((r & 0b111) << 18);
+    v |= ((g & 0b111) << 21);
+    v |= ((b & 0b111) << 24);
     v |= (1 << 27);
 
     *vga_ctrl = v;
@@ -42,7 +45,7 @@ void vga_reset()
 {
   for (int x = 0;x<320;x++){
     for (int y = 0;y<240;y++){
-      vga_pixel(x, y, 0);
+      vga_pixel(x, y, 0,0,0);
     }
   }
 }
@@ -60,7 +63,7 @@ void vga_draw(uint8_t *img)
           int xtotal = 62 + x*7 + xx;
           int ytotal = 22 + y*7 + yy;
 
-          vga_pixel(xtotal, ytotal, c);
+          vga_pixel(xtotal, ytotal, c,c,c);
         }
       }
     }
@@ -72,8 +75,30 @@ void vga_draw_mouse(signed int xa, signed int ya, signed int oldx, signed int ol
 {
     for (int y = 0; y < 7; y++) {
         for (int x = 0; x < 7; x++) {
-            vga_pixel(oldx + x, oldy + y, 0);
-            vga_pixel(xa + x, ya + y, 255);
+            vga_pixel(oldx + x, oldy + y, 0,0,0);
+            vga_pixel(xa + x, ya + y, 255,255,255);
         }
     }
 }
+
+/*desenhar char*/
+void vga_char(char c, int x, int y, int cl){
+  char* font = font8x8_basic[(int)c];
+  for (int xx = 0; xx < 8; xx++){
+    for (int yy =0; yy < 8; yy++){
+      if (font[(xx)] & (1 <<yy)){
+        vga_pixel(x+xx, y+yy, cl,cl,cl);
+      }
+    }
+  }
+}
+
+/*desenhar string*/
+void vga_str(char *c, int x, int y, int cl){
+  for (int i = 0; c[i] != "\0"; i++){
+    vga_char(c[i], x + (i*9),y, cl);
+  }
+}
+
+/* os pixels que a imagem não ocupa são:
+do (y0-22 x0-320)U(y218-240 x0-320)U(y0-240 x0-62)U(y0-240 x258-320) */
