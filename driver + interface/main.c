@@ -143,6 +143,10 @@ int main(int argc, char *argv[]){ // duvida: o que seriam os parametros aqui...?
             }
 
             FILE *stream = create_csv();
+            if (stream == NULL) {
+                closedir(dir);
+                continue;
+            }
 
             int total = 0, i=0;
             while ((entry = readdir(dir)) != NULL) {
