@@ -53,6 +53,7 @@ void vga_reset()
 /*exibir imagem*/
 void vga_draw(uint8_t *img)
 {
+  vga_border();
   for (int y =0;y<28;y++){
     for (int x =0;x<28;x++){
       uint8_t px = img[y * 28 + x];
@@ -102,3 +103,22 @@ void vga_str(char *c, int x, int y, int cl){
 
 /* os pixels que a imagem não ocupa são:
 do (y0-22 x0-320)U(y218-240 x0-320)U(y0-240 x0-62)U(y0-240 x258-320) */
+void vga_border(){
+  int y, x;
+  for (x=0;x<320;x++){
+    for (y=0;y<22;y++){
+      vga_pixel(x, y, 7,2,1);
+    }
+    for (y=218;y<240;y++){
+      vga_pixel(x, y, 7,2,1);
+    }
+  }
+  for (y=0; y<240;y++){
+    for (x=0;x<62;x++){
+      vga_pixel(x, y, 7,2,1);
+    }
+    for (x=258;x<320;x++){
+      vga_pixel(x, y, 7,2,1);
+    }
+  }
+}

@@ -10,5 +10,6 @@ int vga_reset(void);
 void vga_draw_mouse(signed int xa, signed int ya, signed int oldx, signed int oldy);
 void vga_char(char c, int x, int y, int cl);
 void vga_str(char *c, int x, int y, int cl);
+void vga_border();
 
 #endif
