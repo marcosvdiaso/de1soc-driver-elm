@@ -28,6 +28,12 @@ void draw(uint8_t *img)
     signed int oldy;
     int dprs = 0, eprs = 0;
 
+    vga_draw(img);
+    vga_str("DESENHE", 128, 10, 0);
+    vga_str("esq. = pinta", 0, 230, 0);
+    vga_str("meio = sai", 115, 230, 0);
+    vga_str("dir. = apaga", 212, 230, 0);
+
     while (!(mouse.type == EV_KEY && mouse.code == BTN_MIDDLE && mouse.value == 1)) {
         ssize_t bytes = read(fd, &mouse, sizeof(mouse));
         if (bytes < (ssize_t)sizeof(mouse)) {
