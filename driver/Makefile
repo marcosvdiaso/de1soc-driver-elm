@@ -1,5 +1,5 @@
 CC      = arm-linux-gnueabihf-gcc
-CFLAGS  = -g -std=c99 -marm -Iinclude
+CFLAGS  = -g -std=c99 -marm -Ilib
 LDLIBS  = -lm -lrt
 
 all: driver
