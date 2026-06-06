@@ -53,7 +53,6 @@ void vga_reset()
 /*exibir imagem*/
 void vga_draw(uint8_t *img)
 {
-  vga_border();
   for (int y =0;y<28;y++){
     for (int x =0;x<28;x++){
       uint8_t px = img[y * 28 + x];
