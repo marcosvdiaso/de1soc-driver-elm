@@ -10,7 +10,6 @@ void smr_csv(FILE *stream, int total, int ok, int wrng, int eimg, int einf, doub
 }
 
 void infs_csv(FILE *stream, char *name, int r, int e, double lat, int i) {
-    fprintf(stream, "Nº,Arquivo,Predito,Esperado,Resultado,Latência (ns)\n");
     fprintf(stream, "Inferência nº [%d],%s,%d,%d,%s,%.0f\n", i+1, name, r, e, (r == e) ? "Correta" : "Incorreta", lat);
 }
 
@@ -27,5 +26,10 @@ FILE *create_csv(){
     snprintf(name, sizeof(name), "benchmark_%04d%02d%02d_%02d%02d%02d.csv", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
 
     stream = fopen(name, "w");
+    if (stream == NULL) {
+        printf("Erro ao criar arquivo CSV\n");
+        return NULL;
+    }
+    fprintf(stream, "Nº,Arquivo,Predito,Esperado,Resultado,Latência (ns)\n");
     return stream;
 }
