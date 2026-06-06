@@ -96,7 +96,7 @@ void vga_char(char c, int x, int y, int cl){
 
 /*desenhar string*/
 void vga_str(char *c, int x, int y, int cl){
-  for (int i = 0; c[i] != "\0"; i++){
+  for (int i = 0; c[i] != '\0'; i++){
     vga_char(c[i], x + (i*9),y, cl);
   }
 }
