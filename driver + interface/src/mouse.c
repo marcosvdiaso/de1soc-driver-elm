@@ -69,10 +69,10 @@ void draw(uint8_t *img)
             int px = (mouse_x - 62) / 7;
             int py = (mouse_y - 22) / 7;
             img[py * 28 + px] = 255;
-            if (px > 0) img[py * 28 + (px - 1)] = 120;
-            if (px < 28) img[py * 28 + (px + 1)] = 120;
-            if (py > 0) img[(py - 1) * 28 + px] = 120;
-            if (py < 28) img[(py + 1) * 28 + px] = 120;
+            if (px > 0 && img[py * 28 + (px - 1)] < 120) img[py * 28 + (px - 1)] = 120;
+            if (px < 28 && img[py * 28 + (px + 1)] < 120) img[py * 28 + (px + 1)] = 120;
+            if (py > 0 && img[(py - 1) * 28 + px] < 120) img[(py - 1) * 28 + px] = 120;
+            if (py < 28 && img[(py + 1) * 28 + px] < 120) img[(py + 1) * 28 + px] = 120;
             vga_draw(img);
         } else if (mouse.type == EV_SYN && eprs) {
             int px = (mouse_x - 62) / 7;
