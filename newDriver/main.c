@@ -93,7 +93,7 @@ int main(int argc, char *argv[]){ // duvida: o que seriam os parametros aqui...?
             FILE *f = fopen(path, "rb");
             if (f) {
                 if (fread(img, 1, 784, f) == 784) {
-                    //vga_border();
+                    vga_border();
                     vga_draw(img);
                     printf("Imagem exibida\n");
                 } else {
@@ -128,6 +128,7 @@ int main(int argc, char *argv[]){ // duvida: o que seriam os parametros aqui...?
                 img[i] = 0;
             }
 
+            vga_border();
             draw(img);
 
             printf("Digite o dígito esperado: ");
