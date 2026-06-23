@@ -88,7 +88,7 @@ flowchart TD
     E[Driver Assembly\ndriver.s]
     F["mmap /dev/mem\nRegistradores"]
     G[Coprocessador ELM]
-    H[/dev/input/event0]
+    H["/dev/input/event0"]
 
     A --> B
     A --> C
@@ -308,10 +308,8 @@ As imagens de teste devem estar presentes na pasta `test/` para que o modo bench
 Na DE1-SoC, executar com o caminho opcional da imagem:
 
 ```bash
-# Modo geral (imagem pode ser passada pelo menu)
 sudo ./driver
 
-# Com caminho da imagem pré-definido para o Modo 1
 sudo ./driver test/7-106.bin
 ```
 
@@ -347,7 +345,7 @@ Após confirmar, o programa solicita o dígito esperado, envia a imagem ao copro
 
 ## Modo 3: Benchmark
 
-O programa varre automaticamente todos os arquivos do diretório `test/`, extrai o dígito esperado do nome do arquivo, executa a inferência e acumula as métricas. Ao final exibe:
+O programa varre automaticamente todos os arquivos do diretório `test/`, extrai o dígito esperado do nome do arquivo, executa a inferência e acumula as métricas. Ao final exibe (valores variam):
 
 ```
 ------------------------------------------
@@ -558,10 +556,6 @@ Restaura os pixels da área VGA coberta pelo cursor usando o conteúdo atual de 
 
 Redesenha o bloco 7×7 correspondente à célula `(px, py)` da grade 28×28 com a intensidade `cor`.
 
-### `void vga_char(char c, int x, int y, int cl)` / `void vga_str(char *s, int x, int y, int cl)`
-
-Renderizam um caractere ou string na VGA usando a fonte 8×8.
-
 ---
 
 ## Mouse: `lib/mouse.h`
@@ -669,8 +663,6 @@ Os requisitos do Marco 3 foram atendidos:
 - Inferência a partir de arquivo com exibição na VGA
 - Desenho interativo via mouse com feedback visual em tempo real
 - Benchmark automático sobre dataset de 2.000 imagens com log CSV
-
-O gargalo identificado é a acurácia de 38,40%, causada pela quantização Q4.12 dos pesos. Uma melhoria possível seria aumentar a precisão para Q8.8 ou implementar re-escalonamento dinâmico dos pesos antes da quantização, preservando mais informação do modelo float original.
 
 ---
 
