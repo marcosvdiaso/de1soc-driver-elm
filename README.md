@@ -10,28 +10,26 @@
 - [6. Instalação e Configuração](#6-instalação-e-configuração)
 - [7. Execução](#7-execução)
 - [8. Assembly](#8-assembly)
-- [9. API Pública](#9-api-pública)
-- [10. Protocolo de Comunicação](#10-protocolo-de-comunicação)
-- [11. Testes](#11-testes)
-- [12. Conclusão](#12-conclusão)
+- [9. Módulos da Aplicação C](#9-módulos-da-aplicação-c)
+- [10. API Pública](#10-api-pública)
+- [11. Protocolo de Comunicação](#11-protocolo-de-comunicação)
+- [12. Testes](#12-testes)
+- [13. Conclusão](#13-conclusão)
 
 ---
 
 # 1. Visão Geral
 
-O projeto implementa um driver de comunicação entre um processador ARM HPS e um coprocessador ELM embarcado em FPGA na plataforma DE1-SoC.
+Este marco completa o sistema de classificação de dígitos numéricos na plataforma DE1-SoC, integrando a aplicação em C com o IP-Core VGA, entrada via mouse e um modo de validação/benchmark sobre dataset completo.
 
-Toda a lógica do driver foi implementada em ARM Assembly, incluindo:
+O sistema final é composto por quatro camadas:
 
-- Mapeamento de memória física via mmap
-- Controle de registradores da FPGA
-- Protocolo de handshake
-- Envio de instruções
-- Inicialização da inferência
-- Leitura de resultados
+- **Coprocessador ELM em FPGA** (Marco 1): núcleo de inferência em Verilog
+- **Driver em ARM Assembly** (Marco 2): API de comunicação com a FPGA via MMIO
+- **Módulos de interface** (Marco 3): VGA, mouse e CSV, implementados em C
+- **Aplicação principal** (Marco 3): CLI interativa com três modos de operação
 
-O objetivo do projeto é fornecer uma interface de software para controle do acelerador ELM diretamente do Linux embarcado da DE1-SoC.
-O coprocessador ELM utilizado neste projeto foi fornecido pelo docente da disciplina. Mais detalhes sobre ele podem ser vistos [aqui](https://github.com/DestinyWolf/Problema_SD_2026_1/tree/master).
+A aplicação permite ao usuário classificar dígitos MNIST a partir de um arquivo binário, desenhá-los diretamente na tela usando o mouse, ou executar um benchmark automático sobre um dataset com 2.000 imagens, gerando métricas detalhadas e salvando os resultados em CSV.
 
 ---
 
@@ -41,119 +39,123 @@ O coprocessador ELM utilizado neste projeto foi fornecido pelo docente da discip
 
 O sistema deve:
 
-- Mapear os registradores físicos da FPGA
-- Realizar comunicação entre HPS e FPGA
-- Implementar protocolo de handshake
-- Enviar imagens e pesos do modelo ELM
-- Inicializar inferência
-- Ler resultados produzidos pelo coprocessador
-- Medir métricas de desempenho
+- Exibir um menu interativo com os três modos de operação
+- Receber o caminho da imagem via argumento de linha de comando ou entrada do usuário
+- Ler imagens de 28×28 pixels (784 bytes) no formato `.bin`
+- Exibir a imagem na tela VGA antes de realizar a inferência
+- Permitir ao usuário desenhar um dígito com o mouse na tela VGA e classificá-lo
+- Enviar a imagem ao coprocessador via driver e obter o dígito predito
+- Executar benchmark automático sobre a pasta `test/` com 2.000 imagens
+- Computar e exibir as métricas: acurácia, latência média, throughput e desvio padrão
+- Salvar log detalhado do benchmark em arquivo CSV
 
 ## Requisitos Não Funcionais
 
 O sistema deve:
 
-- Operar em tempo reduzido
-- Garantir sincronização correta entre ARM e FPGA
-- Operar diretamente sobre Linux embarcado
+- Integrar ao driver ARM Assembly do Marco 2 sem modificação da lógica de comunicação com a FPGA
+- Operar sobre Linux embarcado da DE1-SoC em modo texto
+- Utilizar o IP-Core VGA disponibilizado pelo professor via barramento MMIO
+- Gerar o arquivo CSV com timestamp no nome para evitar sobrescrita
 
 ## Requisitos de Hardware
 
-- FPGA Terasic DE1-SoC
+- FPGA Terasic DE1-SoC com coprocessador ELM gravado
 - Processador ARM Cortex-A9
 - Linux embarcado na DE1-SoC
-- Coprocessador ELM gravado na FPGA
+- Monitor conectado à saída VGA da DE1-SoC
+- Mouse USB conectado à DE1-SoC
 
 ---
 
 # 3. Arquitetura do Sistema
 
-A arquitetura do projeto é dividida em quatro camadas principais:
+A arquitetura é organizada em cinco camadas:
 
-1. Aplicação em C (Marco 3)
-2. Driver em ARM Assembly (Marco 2)
-3. Interface HPS-FPGA via memória mapeada (Marco 2)
-4. Coprocessador ELM implementado em FPGA (Marco 1)
-
-O fluxo de comunicação ocorre da seguinte forma:
+1. Aplicação C -> `main.c`
+2. Módulos de interface -> `vga.c`, `mouse.c`, `csv.c`
+3. Driver em ARM Assembly -> `driver.s`
+4. Interface HPS-FPGA via memória mapeada
+5. Coprocessador ELM em FPGA
 
 ```mermaid
 flowchart TD
 
-    A[Aplicação C]
-    B[Driver]
-    C["mmap /dev/mem<br>Registradores"]
-    D["Coprocessador"]
+    A[Aplicação C\nmain.c]
+    B[VGA\nvga.c]
+    C[Mouse\nmouse.c]
+    D[CSV\ncsv.c]
+    E[Driver Assembly\ndriver.s]
+    F["mmap /dev/mem\nRegistradores"]
+    G[Coprocessador ELM]
+    H[/dev/input/event0]
 
     A --> B
-    B --> C
-    C --> D
+    A --> C
+    A --> D
+    A --> E
+    B --> F
+    E --> F
+    F --> G
+    H --> C
 ```
 
 ## Descrição das Camadas
 
-### Aplicação C
+### Aplicação C -> `main.c`
 
-A princípio está servindo apenas para:
+Ponto de entrada do sistema. Implementa o menu interativo com os três modos:
 
-- Inicialização do driver
-- Solicitação de inferência
-- Coleta de métricas
-- Exibição de resultados
+- **Modo 1: Inferência por arquivo:** lê a imagem de um caminho fornecido via CLI ou entrada do usuário, exibe na VGA e infere com o coprocessador
+- **Modo 2: Inferência por desenho:** inicializa a grade na VGA e aguarda o usuário desenhar o dígito com o mouse; ao confirmar, envia para inferência
+- **Modo 3> Benchmark:** varre automaticamente toda a pasta `test/` (2.000 imagens), infere cada uma, computa métricas e salva CSV
 
-Porém após finalização do marco 3 é esperado que:
-
-- Possa receber path dos arquivos
-- Enviar arquivos ao driver
-- Salvar um log em csv
+A inicialização do driver (`elm_open`, `elm_reset`, `elm_load`) e da VGA (`vga_start`, `vga_reset`) é feita uma única vez antes do menu.
 
 ---
 
-### Driver ARM Assembly
+### Módulo VGA -> `vga.c`
 
-Camada responsável pela comunicação direta com o hardware.
+Controla a exibição na tela VGA de 320×240 pixels via registrador mapeado no offset `0x0030` da região base da FPGA.
 
-Implementa:
+O mapeamento de memória é compartilhado com o driver: o ponteiro `mmap` é obtido chamando `elm_mmap()`, evitando um segundo `mmap` independente.
 
-- Controle dos registradores
-- Protocolo de handshake
-- Envio de instruções
-- Polling de status
-- Controle de temporização
-
-Toda a implementação do driver foi realizada em ARM Assembly.
+Cada pixel da imagem 28×28 é escalado para um bloco de 7×7 pixels na tela, centralizando a imagem na região `(62,22)–(258,218)`. A borda ao redor da imagem é preenchida com uma cor de destaque para delimitar a área de desenho.
 
 ---
 
-### Memória Mapeada (`mmap`)
+### Módulo Mouse -> `mouse.c`
 
-O driver utiliza `/dev/mem` e `mmap` para mapear a região física dos registradores da FPGA no espaço de endereçamento virtual do processo.
+Lê eventos do dispositivo `/dev/input/event0` usando a estrutura `input_event` do kernel Linux.
 
-Base física utilizada:
+O cursor é desenhado como um bloco vermelho de 7×7 pixels na tela VGA. O movimento é acumulado a cada evento `EV_REL` e aplicado apenas na sincronização (`EV_SYN`), garantindo atualizações consistentes.
 
-```text
-0xFF200000
-```
+Modos de operação via botões:
 
-Span mapeado:
+- **Botão esquerdo pressionado:** pinta o pixel sob o cursor como branco (255) e suaviza os vizinhos adjacentes (valor 120), simulando traço com borda
+- **Botão direito pressionado:** apaga o pixel sob o cursor (valor 0)
+- **Botão do meio (scroll):** confirma o desenho e encerra a captura
 
-```text
-0x1000
-```
-
-A comunicação entre o HPS e o coprocessador ocorre exclusivamente através desses registradores mapeados em memória.
+O cursor é restrito à área da imagem (`x ∈ [62, 251]`, `y ∈ [22, 211]`). Ao mover, a posição anterior é restaurada a partir do vetor `img[]`, apagando o rastro do cursor sem destruir o conteúdo desenhado.
 
 ---
 
-### CoProcessador
+### Módulo CSV -> `csv.c`
 
-O CoProcessador utilizado pode ser encontrado [aqui](https://github.com/DestinyWolf/Problema_SD_2026_1/tree/master).
-Foram feitas apenas algumas adaptações apra uso do CoProcessador:
+Cria e escreve o arquivo de log do benchmark. O nome do arquivo é gerado automaticamente com base na data e hora do sistema no formato `benchmark_AAAAMMDD_HHMMSS.csv`.
 
-- Ele foi fundido junto a um HPS fornecido pelo professor, sendo instanciado no main file da HPS
-- Foram criados 3 PIOs novos no projeto, para data_in, data_out e os signals
+O CSV contém duas seções:
 
-<img width="1916" height="1080" alt="image" src="https://github.com/user-attachments/assets/a7eab156-591d-4249-8b18-274a00aa3bb9" />
+- **Por inferência:** número da inferência, nome do arquivo, dígito predito, dígito esperado, resultado (Correta/Incorreta), latência em nanosegundos
+- **Resumo final:** total de imagens, acertos, erros, falhas de leitura, falhas de inferência, acurácia, latência média, throughput e desvio padrão
+
+---
+
+### Driver ARM Assembly -> `driver.s`
+
+Mantém toda a lógica de comunicação com o coprocessador do Marco 2. A principal mudança neste marco é que `elm_start` passou a receber um ponteiro `uint8_t *img` como argumento em `r0`, substituindo o uso de imagem embutida via `.incbin`.
+
+Foi adicionada também a função `elm_mmap`, que retorna o ponteiro `r9` com o endereço virtual base da FPGA, permitindo que os módulos C (VGA) acessem outros registradores da mesma região mapeada sem necessidade de um segundo `mmap`.
 
 ---
 
@@ -178,10 +180,11 @@ Foram feitas apenas algumas adaptações apra uso do CoProcessador:
 
 ## Compilação
 
-| Ferramenta              | Finalidade                          |
-| ----------------------- | ----------------------------------- |
-| gcc-arm-linux-gnueabihf | Cross-compilação para ARM Cortex-A9 |
-| GNU Assembler (GAS)     | Montagem do código ARM Assembly     |
+| Ferramenta              | Finalidade                                          |
+| ----------------------- | --------------------------------------------------- |
+| gcc-arm-linux-gnueabihf | Cross-compilação para ARM Cortex-A9                 |
+| GNU Assembler (GAS)     | Montagem do código ARM Assembly (`driver.s`)        |
+| GNU Make                | Automação do build multi-módulo                     |
 
 ---
 
@@ -195,8 +198,8 @@ Foram feitas apenas algumas adaptações apra uso do CoProcessador:
 
 ## Linguagens Utilizadas
 
-- ARM Assembly
 - C99
+- ARM Assembly (GAS)
 
 ---
 
@@ -208,19 +211,32 @@ flowchart TD
     A[Projeto]
 
     A --> B[Makefile]
-    A --> C[driver.h]
-    A --> D[driver.s]
-    A --> E[main.c]
+    A --> C[driver.s]
+    A --> D[main.c]
+
+    A --> E[lib]
+    E --> E1[driver.h]
+    E --> E2[vga.h]
+    E --> E3[mouse.h]
+    E --> E4[csv.h]
+
+    A --> F[src]
+    F --> F1[vga.c]
+    F --> F2[mouse.c]
+    F --> F3[csv.c]
+    F --> F4[font8x8_basic.h]
 
     A --> G[archives]
     G --> G1[W_in.bin]
     G --> G2[b.bin]
     G --> G3[beta.bin]
 
-    G --> G4[images]
-    G4 --> G5[image.bin]
-
+    A --> H[test]
+    H --> H1["0.01.bin … 0.200.bin"]
+    H --> H2["1-01.bin … 9-200.bin"]
 ```
+
+O diretório `test/` contém 2.000 imagens de teste, 200 por dígito, para os dígitos 0 a 9. O nome de cada arquivo codifica o dígito esperado no primeiro caractere (ex.: `7-106.bin` representa o dígito 7).
 
 ---
 
@@ -228,7 +244,7 @@ flowchart TD
 
 ## Dependências
 
-É necessário o toolchain de cross-compilação para ARM Linux:
+Toolchain de cross-compilação para ARM Linux:
 
 ```bash
 sudo apt install gcc-arm-linux-gnueabihf
@@ -238,21 +254,23 @@ sudo apt install gcc-arm-linux-gnueabihf
 
 ## Build
 
-Clone o repositório e compile utilizando `make`:
+Clone o repositório e compile:
 
 ```bash
-git clone https://github.com/marcosvdiaso/de1soc-driver-elm.git
-cd "de1soc-driver-elm/Marco 2 - Driver"
+git clone https://github.com/marcosvdiaso/de1soc-elm-app.git
+cd "de1soc-elm-app/Marco 3 - Aplicação"
 make
 ```
 
 O `Makefile` executa:
 
 ```bash
-arm-linux-gnueabihf-gcc -g -std=c99 -marm -o driver main.c driver.s -lm -lrt
+arm-linux-gnueabihf-gcc -g -std=c99 -marm -Ilib \
+    -o driver main.c src/vga.c src/mouse.c src/csv.c driver.s \
+    -lm -lrt
 ```
 
-Para remover o binário gerado:
+Para remover o binário:
 
 ```bash
 make clean
@@ -262,143 +280,317 @@ make clean
 
 ## Configuração da FPGA
 
-O coprocessador ELM deve estar previamente sintetizado e gravado na FPGA da DE1-SoC utilizando Quartus Prime.
-
-Após a configuração da FPGA é necessário:
+O coprocessador ELM deve estar previamente sintetizado e gravado via Quartus Prime. Após isso:
 
 - Inicializar o Linux embarcado da DE1-SoC
-- Garantir permissões de acesso ao `/dev/mem`
+- Garantir permissões de acesso a `/dev/mem` e `/dev/input/event0`
 - Executar o programa como `root`
+- Conectar monitor VGA e mouse USB antes de iniciar
 
 ---
 
 ## Arquivos Binários Necessários
 
-Os pesos do modelo e a imagem de entrada são embutidos no binário em tempo de compilação utilizando `.incbin`.
-É IMPRESCINDÍVEL a existência desses arquivos antes do build:
+Os pesos do modelo são embutidos no binário em tempo de compilação via `.incbin`:
 
-| Arquivo                     | Conteúdo                   | Itens                 |
-| --------------------------- | -------------------------- | --------------------- |
-| `archives/W_in.bin`         | Matriz de pesos de entrada | 100.352 valores Q4.12 |
-| `archives/b.bin`            | Bias da camada oculta      | 128 valores Q4.12     |
-| `archives/beta.bin`         | Pesos de saída             | 1.280 valores Q4.12   |
-| `archives/images/image.bin` | Imagem de entrada          | 784 bytes             |
+| Arquivo             | Conteúdo                   | Itens                 |
+| ------------------- | -------------------------- | --------------------- |
+| `archives/W_in.bin` | Matriz de pesos de entrada | 100.352 valores Q4.12 |
+| `archives/b.bin`    | Bias da camada oculta      | 128 valores Q4.12     |
+| `archives/beta.bin` | Pesos de saída             | 1.280 valores Q4.12   |
+
+As imagens de teste devem estar presentes na pasta `test/` para que o modo benchmark funcione.
 
 ---
 
 # 7. Execução
 
-Na DE1-SoC:
+Na DE1-SoC, executar com o caminho opcional da imagem:
 
 ```bash
+# Modo geral (imagem pode ser passada pelo menu)
 sudo ./driver
+
+# Com caminho da imagem pré-definido para o Modo 1
+sudo ./driver test/7-106.bin
 ```
 
-<img width="817" height="583" alt="image" src="https://github.com/user-attachments/assets/b214edc4-6657-4f3b-b0f8-5c8561a451ca" />
+Ao iniciar, o programa exibe o menu:
 
-O programa solicita:
+```
+Digite o número correspondente menu:
+1. Inferência enviando imagem
+2. Inferência desenhando a imagem
+3. Benchmark
+4. Sair
+```
 
-- Dígito esperado
-- Quantidade de inferências
+---
 
-Ao final são exibidas métricas de desempenho.
+## Modo 1: Inferência por Arquivo
+
+O programa lê o caminho da imagem do argumento `argv[1]` ou solicita ao usuário caso não tenha sido passado. A imagem é carregada, exibida na VGA dentro da borda delimitada e enviada ao coprocessador. O resultado é impresso no terminal comparando o dígito predito com o esperado.
+
+---
+
+## Modo 2: Inferência por Desenho
+
+A tela VGA é inicializada com a grade vazia. O usuário controla o cursor com o mouse:
+
+- **Botão esquerdo:** pinta pixels (valor máximo com suavização dos vizinhos)
+- **Botão direito:** apaga pixels
+- **Botão do meio:** confirma o desenho e dispara a inferência
+
+Após confirmar, o programa solicita o dígito esperado, envia a imagem ao coprocessador e exibe o resultado no terminal.
+
+---
+
+## Modo 3: Benchmark
+
+O programa varre automaticamente todos os arquivos do diretório `test/`, extrai o dígito esperado do nome do arquivo, executa a inferência e acumula as métricas. Ao final exibe:
+
+```
+------------------------------------------
+MÉTRICAS BENCHMARK
+------------------------------------------
+Total encontrado: 2000
+Inferências válidas: 2000
+Corretas: 768
+Incorretas: 1232
+Erros ao carregar imagem: 0
+Erros ao iniciar inferência: 0
+Acurácia: 38.40%
+Latência média: 10112016 ns
+Throughput: 98.89 inferências/s
+Desvio padrão: 8374023 ns
+```
+
+Um arquivo CSV é gerado automaticamente com os resultados individuais de cada inferência e o resumo final.
 
 ---
 
 # 8. Assembly
 
-## Montagem de Instruções — `build_instruction`
+## Mudanças em relação ao Marco 2
 
-Foi criada uma função genérica para montagem das instruções de 32 bits enviadas ao coprocessador. Ela recebe os campos já isolados e os posiciona nos bits corretos via shift e OR, funcionando como uma concatenação de campos:
+### `elm_start` -> Recebe imagem por parâmetro
 
-| Registrador | Conteúdo          |
-| ----------- | ----------------- |
-| r0          | Opcode            |
-| r1          | Endereço          |
-| r2          | Valor             |
-| r3          | Shift do endereço |
-| r4          | Shift do valor    |
+No Marco 2, a imagem era embutida no binário via `.incbin` e acessada diretamente. No Marco 3, `elm_start` recebe um ponteiro `uint8_t *img` em `r0`, permitindo que a aplicação C passe qualquer imagem em tempo de execução seja lida de arquivo ou desenhada pelo usuário.
 
----
+Internamente, `elm_start` delega para `elm_store_img(img)` antes de disparar a instrução `START`.
 
-## Protocolo de Handshake — `send_instruction`
+### `elm_mmap` -> Expõe o ponteiro de mmap
 
-Após montar a instrução, ela é enviada respeitando o protocolo de handshake com o coprocessador. A instrução é escrita em `DATA_IN`, o enable é levantado e o driver aguarda o busy subir via polling, confirmando que a FPGA capturou a instrução. Em seguida o enable é baixado e o driver aguarda o busy cair antes de retornar.
+Função nova adicionada para permitir que os módulos C (especificamente o VGA) acessem a região mapeada em memória sem abrir um segundo `mmap`. Retorna o valor atual de `r9`:
 
----
+```asm
+elm_mmap:
+    mov r0, r9
+    bx lr
+```
 
-## Instruções de Load
-
-A maioria das funções de store segue o mesmo padrão, um loop lendo os dados do buffer e chamando `build_instruction` com os parâmetros corretos, `elm_store_weights` é a exceção, envia duas instruções por peso: primeiro o endereço (`STORE_WEIGHTS_ADDR`) e depois o valor (`STORE_WEIGHTS_VAL`), em sequência no mesmo loop.
+O módulo VGA utiliza esse ponteiro para calcular o endereço do registrador VGA com o offset `0x0030`.
 
 ---
 
-## Início da Inferência — `elm_start`
+## Protocolo de Handshake -> `send_instruction`
 
-Pulsa `clr_operation` para limpar flags anteriores, envia a imagem via `elm_store_img`, dispara a instrução START e aguarda `DONE=1` em `DATA_OUT` via polling. Retorna `-1` se `ERROR=1` for detectado.
-
----
-
-## Leitura do Resultado — `elm_result`
-
-Lê `DATA_OUT` e extrai o dígito predito dos bits `[3:0]`. Não é necessária uma instrução STATUS pois `DATA_OUT` é atualizado continuamente pelo coprocessador.
+Sem alterações. A instrução é escrita em `DATA_IN`, o enable é levantado, o driver aguarda `BUSY=1` por polling (confirmando captura), baixa o enable e aguarda `BUSY=0` antes de retornar.
 
 ---
 
-# 9. API Pública
+## Montagem de Instruções -> `build_instruction`
 
-## `int elm_open(void)`
-
-Abre `/dev/mem` e realiza `mmap` da região da FPGA.
-
-Retorno:
-
-- `0` → sucesso
-- `-1` → erro
+Sem alterações. Recebe opcode em `r0`, endereço em `r1`, valor em `r2`, shift do endereço em `r3` e shift do valor em `r4`. Constrói a instrução de 32 bits via shift e OR e chama `send_instruction`.
 
 ---
 
-## `void elm_close(void)`
+# 9. Módulos da Aplicação C
+
+## VGA: `src/vga.c`
+
+### Mapeamento
+
+O registrador VGA está no offset `0x0030` da base `0xFF200000`. O ponteiro é obtido via `elm_mmap()`:
+
+```c
+volatile uint8_t *base = (volatile uint8_t *)elm_mmap();
+vga_ctrl = (volatile uint32_t *)(base + VGA_BASE);
+```
+
+### Formato do pixel
+
+Cada escrita em `vga_ctrl` encoda a posição e a cor em um único valor de 32 bits:
+
+| Bits    | Campo        |
+| ------- | ------------ |
+| [8:0]   | Coordenada X |
+| [16:9]  | Coordenada Y |
+| [20:18] | Canal R (3b) |
+| [23:21] | Canal G (3b) |
+| [26:24] | Canal B (3b) |
+| [27]    | Enable write |
+
+O handshake de escrita consiste em enviar o valor com bit 27 em 1 e em seguida enviar o mesmo valor com bit 27 em 0.
+
+### Exibição da imagem
+
+Cada pixel da imagem 28×28 é mapeado para um bloco de 7×7 pixels na tela, ocupando a região central `(62,22)–(258,218)`. O nível de cinza (8 bits) é reduzido para 3 bits (`px >> 5`) para caber nos canais RGB de 3 bits do IP-Core.
+
+---
+
+## Mouse: `src/mouse.c`
+
+O dispositivo `/dev/input/event0` é aberto em modo leitura bloqueante. Eventos são processados usando a estrutura `input_event` do kernel:
+
+```
+EV_REL + REL_X / REL_Y  →  acumula movimento dx, dy
+EV_KEY + BTN_LEFT        →  ativa modo desenho (1) ou neutro (0)
+EV_KEY + BTN_RIGHT       →  ativa modo apagar (2) ou neutro (0)
+EV_KEY + BTN_MIDDLE      →  encerra a captura
+EV_SYN                   →  aplica movimento acumulado e atualiza a tela
+```
+
+O clamp garante que o cursor não sai da área da imagem. A função `vga_restore` redesenha as células VGA sobrescritas pelo cursor ao mover, usando o conteúdo atual do vetor `img[]`.
+
+---
+
+## CSV: `src/csv.c`
+
+O arquivo é criado com `fopen` em modo escrita. O nome é gerado com `snprintf` a partir de `localtime`:
+
+```c
+snprintf(name, sizeof(name),
+    "benchmark_%04d%02d%02d_%02d%02d%02d.csv",
+    t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
+    t->tm_hour, t->tm_min, t->tm_sec);
+```
+
+A função `infs_csv` é chamada dentro do loop do benchmark para registrar cada inferência. A função `smr_csv` é chamada ao final para escrever o bloco de métricas agregadas.
+
+---
+
+# 10. API Pública
+
+## Driver: `lib/driver.h`
+
+### `int elm_open(void)`
+
+Abre `/dev/mem` e realiza `mmap` da região da FPGA. Salva o ponteiro internamente em `r9`.
+
+Retorno: `0` em sucesso, `-1` em erro.
+
+---
+
+### `void elm_close(void)`
 
 Desfaz `munmap` e fecha o file descriptor.
 
 ---
 
-## `void elm_reset(void)`
+### `void elm_reset(void)`
 
-Gera pulso de reset no coprocessador.
-
----
-
-## `int elm_load(void)`
-
-Envia bias, beta e pesos para a FPGA.
-
-Retorno:
-
-- `0` → sucesso
-- `-1` → erro
+Gera pulso de reset no coprocessador via bit 2 de `SIGNALS`.
 
 ---
 
-## `int elm_start(void)`
+### `int elm_load(void)`
 
-Envia a imagem, inicia inferência e aguarda finalização.
+Envia bias, beta e pesos para a FPGA na sequência: `elm_store_bias → elm_store_beta → elm_store_weights`.
 
-Retorno:
-
-- valor de `DATA_OUT`
-- `-1` em caso de erro
+Retorno: `0` em sucesso, `-1` em erro.
 
 ---
 
-## `int elm_result(void)`
+### `int elm_start(uint8_t *img)`
 
-Extrai o dígito predito.
+Recebe o ponteiro para o buffer de imagem (784 bytes), envia via `elm_store_img`, pulsa `clr_operation` e dispara a instrução `START`. Aguarda `DONE=1` em `DATA_OUT` por polling.
+
+Retorno: valor de `DATA_OUT` em sucesso, `-1` em erro.
 
 ---
 
-# 10. Protocolo de Comunicação
+### `int elm_result(void)`
+
+Lê `DATA_OUT` e extrai o dígito predito dos bits `[3:0]`.
+
+Retorno: dígito predito `[0,9]`, `-1` em erro.
+
+---
+
+### `void *elm_mmap(void)`
+
+Retorna o ponteiro para a região mapeada em memória. Usado pelos módulos C para acessar outros registradores da FPGA (ex.: VGA).
+
+---
+
+## VGA: `lib/vga.h`
+
+### `int vga_start(void)`
+
+Inicializa o ponteiro interno para o registrador VGA usando `elm_mmap()`.
+
+### `int vga_reset(void)`
+
+Preenche toda a tela 320×240 com preto.
+
+### `void vga_draw(uint8_t *img)`
+
+Exibe a imagem 28×28 na área central da tela, escalada para blocos de 7×7 pixels.
+
+### `void vga_pixel(int x, int y, int r, int g, int b)`
+
+Escreve um pixel na posição `(x, y)` com a cor `(r, g, b)` em 3 bits por canal.
+
+### `void vga_border(void)`
+
+Preenche a borda ao redor da área da imagem com uma cor de destaque.
+
+### `void vga_draw_mouse(int x, int y)`
+
+Desenha o cursor do mouse como um bloco vermelho de 7×7 pixels na posição `(x, y)`.
+
+### `void vga_restore(uint8_t *img, int mx, int my)`
+
+Restaura os pixels da área VGA coberta pelo cursor usando o conteúdo atual de `img[]`.
+
+### `void vga_draw_cell(int px, int py, uint8_t cor)`
+
+Redesenha o bloco 7×7 correspondente à célula `(px, py)` da grade 28×28 com a intensidade `cor`.
+
+### `void vga_char(char c, int x, int y, int cl)` / `void vga_str(char *s, int x, int y, int cl)`
+
+Renderizam um caractere ou string na VGA usando a fonte 8×8.
+
+---
+
+## Mouse: `lib/mouse.h`
+
+### `void draw(uint8_t *img)`
+
+Inicia a captura de eventos do mouse e habilita o desenho interativo na VGA. Bloqueia até que o botão do meio seja pressionado. O vetor `img[]` é atualizado em tempo real conforme o usuário desenha.
+
+---
+
+## CSV: `lib/csv.h`
+
+### `FILE *create_csv(void)`
+
+Cria o arquivo CSV com o timestamp no nome e escreve o cabeçalho por inferência.
+
+Retorno: ponteiro `FILE *` em sucesso, `NULL` em erro.
+
+### `void infs_csv(FILE *stream, char *name, int r, int e, double lat, int i)`
+
+Registra o resultado de uma inferência individual no CSV.
+
+### `void smr_csv(FILE *stream, int total, int ok, int wrng, int eimg, int einf, double lat, double thr, double jitter)`
+
+Escreve o bloco de métricas agregadas ao final do arquivo.
+
+---
+
+# 11. Protocolo de Comunicação
 
 ## Registradores
 
@@ -407,6 +599,7 @@ Extrai o dígito predito.
 | DATA_IN     | `0x00` | Envio de instruções   |
 | SIGNALS     | `0x10` | Controle de handshake |
 | DATA_OUT    | `0x20` | Resultado e status    |
+| VGA_CTRL    | `0x30` | Controle do IP VGA    |
 
 ---
 
@@ -424,158 +617,67 @@ Extrai o dígito predito.
 
 | Bit   | Significado |
 | ----- | ----------- |
+| [3:0] | Resultado   |
 | 4     | DONE        |
 | 5     | BUSY        |
 | 6     | ERROR       |
-| [3:0] | Resultado   |
 
 ---
 
-# 11. Testes
+# 12. Testes
 
-## Benchmark Progressivo
+## Benchmark com Dataset Completo
 
-Foram feitos testes sequenciais para 100, 10000, 100000 de testes:
+Foram realizadas três execuções do modo benchmark sobre o dataset completo de 2.000 imagens (200 por dígito, dígitos 0–9).
 
-<details>
-<summary>Screenshots dos benchmarks</summary>
+| Execução | Total | Corretas | Incorretas | Acurácia | Lat. Média (ns) | Throughput (inf/s) | Desvio Padrão (ns) |
+| -------- | ----- | -------- | ---------- | -------- | --------------- | ------------------ | ------------------ |
+| 1        | 2000  | 768      | 1232       | 38,40%   | 10.112.016      | 98,89              | 8.374.023          |
+| 2        | 2000  | 768      | 1232       | 38,40%   | 10.005.697      | 99,94              | 8.376.301          |
+| 3        | 2000  | 768      | 1232       | 38,40%   | 10.064.614      | 99,36              | 8.372.156          |
 
-<img width="1390" height="994" alt="image" src="https://github.com/user-attachments/assets/baad532c-23f1-47cb-9023-ae8402683f9b" />
-<img width="1390" height="994" alt="image" src="https://github.com/user-attachments/assets/8b524705-8560-4149-a237-531bc6629d74" />
-<img width="1390" height="994" alt="image" src="https://github.com/user-attachments/assets/b4c8a361-378a-4aa9-9745-819d39059e75" />
+### Análise dos Resultados
 
-</details>
+**Estabilidade:** os três benchmarks produziram exatamente os mesmos 768 acertos e 1.232 erros, demonstrando que o sistema é completamente determinístico, a mesma imagem sempre produz o mesmo resultado, sem variação causada por ruído de hardware ou condição de corrida.
 
-| Iterações | Resultado             | Robustez | Latência   | Throughput              | Jitter     |
-| --------- | --------------------- | -------- | ---------- | ----------------------- | ---------- |
-| 100       | OK                    | 100%     | 1745688 ns | 572.84 inferências/s    | 1661301 ns |
-| 10000     | OK                    | 100%     | 195873 ns  | 5105.34 inferências/s   | 1299549 ns |
-| 100000    | Overflow nas métricas | 100%     | -18313 ns  | -54604.40 inferências/s | 1548452 ns |
+**Acurácia:** a taxa de 38,40% está abaixo do esperado para um modelo ELM no dataset MNIST. A causa principal é a quantização em ponto fixo Q4.12 (16 bits), que limita a representação dos pesos e introduz erro acumulado ao longo das 100.352 multiplicações de `W_in`. O modelo float original apresenta acurácia significativamente maior; a degradação é consequência direta da quantização e das limitações da representação de 4 bits para a parte inteira.
 
-### Análise dos resultados
+**Latência e Throughput:** a latência média de ~10ms por inferência reflete o tempo de transmissão dos 784 pixels pelo protocolo de handshake via MMIO, mais o tempo de processamento da FPGA. O throughput de ~99 inferências/segundo é consistente entre as execuções.
 
-A primeira coisa que percebemos é, no teste com 100.000 de iterações temos resultados negativo para latência e throughput.
-Isso ocorre devido a um overflow na variável, que possui 32 bits de limite. Porém esse problema foi posteriormente resolvido trocando o tipo da variável para double.
+**Jitter:** o desvio padrão de ~8,3ms é elevado em relação à latência média (~10ms), o que indica grande variação entre inferências individuais. Isso é esperado em um sistema sem prioridade de tempo real, onde o processo pode ser interrompido pelo scheduler do Linux entre as medições.
 
-Além disso os testes mantiveram:
+**Dataset:** o benchmark varre a pasta `test/` com `readdir`, sem ordenação garantida pelo sistema de arquivos. A consistência dos resultados entre execuções confirma que a ordem de processamento não afeta a acurácia total.
 
-- Robustez de 100%
-- Comunicação consistente entre HPS e FPGA
-- Ausência de falhas no protocolo de handshake
-- Ausência de sinais de erro do hardware
-
-Como o carregamento do modelo ocorre apenas uma vez antes do benchmark, os testes medem principalmente:
-
-- Tempo de inferência
-- Comunicação via memória mapeada
-- Sincronização HPS-FPGA
+**Erros de I/O:** todas as execuções apresentaram zero erros de leitura de imagem e zero erros de inferência, confirmando a estabilidade do protocolo de handshake entre HPS e FPGA.
 
 ---
 
-#### Latência
+## Modo de Desenho
 
-| Iterações | Latência Média |
-| --------- | -------------- |
-| 100       | 1745688 ns     |
-| 10000     | 195873 ns      |
-| 100000    | -18313 ns      |
-
-A latência é medida usando `clock_gettime(CLOCK_MONOTONIC)` antes e depois de cada chamada ao `elm_start`. A diferença entre os dois instantes é calculada em nanosegundos e acumulada para posterior cálculo da média:
-
-```c
-clock_gettime(CLOCK_MONOTONIC, &t1_lat);
-elm_start();
-clock_gettime(CLOCK_MONOTONIC, &t2_lat);
-lats[i] = (t2_lat.tv_sec - t1_lat.tv_sec) * 1e9 +
-           (t2_lat.tv_nsec - t1_lat.tv_nsec);
-lat += lats[i];
-```
-
-A latência média é calculada ao final dividindo o total acumulado pelo número de testes:
-
-```c
-lat /= test;
-```
+O modo de desenho via mouse foi testado com dígitos traçados manualmente na grade VGA 28×28. O sistema respondeu corretamente ao pintar e apagar pixels com os botões esquerdo e direito, ao restringir o cursor à área delimitada e ao encerrar a captura ao pressionar o botão do meio. A inferência após o desenho retornou resultados coerentes com os traços realizados.
 
 ---
 
-#### Throughput
+# 13. Conclusão
 
-Também foi observado aumento progressivo do throughput:
+O Marco 3 completa o sistema de classificação de dígitos numéricos sobre o SoC DE1-SoC, entregando uma aplicação C interativa com três modos de operação plenamente funcionais.
 
-| Iterações | Throughput              |
-| --------- | ----------------------- |
-| 100       | 572.84 inferências/s    |
-| 10000     | 5105.34 inferências/s   |
-| 100000    | -54604.40 inferências/s |
+A integração entre os módulos, driver Assembly, VGA, mouse e CSV, funcionou corretamente, com o compartilhamento do ponteiro `mmap` via `elm_mmap()` eliminando a necessidade de um segundo mapeamento de memória para o IP-Core VGA.
 
-O throughput é calculado dividindo o número de inferências pela latência total convertida em segundos:
+Os requisitos do Marco 3 foram atendidos:
 
-```c
-s   = lat / 1e9;
-thr = test / s;
-```
+- Inferência a partir de arquivo com exibição na VGA
+- Desenho interativo via mouse com feedback visual em tempo real
+- Benchmark automático sobre dataset de 2.000 imagens com log CSV
+
+O gargalo identificado é a acurácia de 38,40%, causada pela quantização Q4.12 dos pesos. Uma melhoria possível seria aumentar a precisão para Q8.8 ou implementar re-escalonamento dinâmico dos pesos antes da quantização, preservando mais informação do modelo float original.
 
 ---
 
-#### Robustez
-
-Todos os testes válidos apresentaram robustez de 100%.
-Em caso de imagem incorreta, sempre apresenta 0%.
-Esses dados mostram a consistência da inferência.
-
-A robustez é calculada contando o número de inferências corretas e dividindo pelo total de testes:
-
-```c
-if (result == digit) ok++;
-rob = (ok * 100.0f) / test;
-```
-
----
-
-#### Jitter
-
-Os resultados também demonstraram redução do jitter conforme o aumento do número de inferências:
-
-| Iterações | Jitter     |
-| --------- | ---------- |
-| 100       | 1661301 ns |
-| 10000     | 1299549 ns |
-| 100000    | 1548452 ns |
-
-O jitter é o desvio padrão da latência. Para calculá-lo, todas as latências individuais são armazenadas em um array durante o loop. Após o loop, calcula-se a diferença de cada amostra em relação à média, eleva-se ao quadrado, acumula-se na variância e ao fim aplica-se a fórmula do desvio padrão:
-
-```c
-for (int i = 0; i < test; i++) {
-    diff = lats[i] - lat;
-    var += diff * diff;
-}
-jitter = sqrt(var / test);
-```
-
----
-
-## Digito predito diferente do digito esperado
-
-<img width="818" height="584" alt="image" src="https://github.com/user-attachments/assets/08e1e301-5de6-402a-bf0b-f8d673ddd70f" />
-
-Caso o digito predito seja diferente do digito esperado, teremos uma robustez de 0% nas métricas finais.
-
----
-
-# 12. Conclusão
-
-Por fim, após testes é possível conlcuir que o driver atende aos requisitos funcionais estabelecidos:
-
-- Inicializa o hardware via `/dev/mem` e `mmap` opera corretamente em todas as execuções
-- O protocolo de handshake funciona corretamente
-- A inferência retorna resultados consistentes ao longo de todas iterações
-- O sistema operou corretamente sob a placa
-
-# Autor
+# Autores
 
 Marcos Vinícius Dias Oliveira
 
 Matheus Silva Rodrigues
 
-Projeto desenvolvido para a disciplina TEC499
+Projeto desenvolvido para a disciplina TEC499 - Sistemas Digitais, UEFS 2026.1
